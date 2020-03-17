@@ -1,4 +1,4 @@
-function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,I0,E0,time,guess)
+function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess)
 % [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] =
 % fit_SEIQRDP(I,R,D,Npop,time,guess) estimates the parameters used in the
 % SEIQRDP function, used to model the time-evolution of an epidemic outbreak.
@@ -9,6 +9,8 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,I0
 %   R: vector [1xN] of the target time-histories of the recovered cases
 %   D: vector [1xN] of the target time-histories of the dead cases
 %   Npop: scalar: Total population of the sample
+%   E0: scalar [1x1]: Initial number of exposed cases
+%   I0: scalar [1x1]: Initial number of infectious cases
 %   time: vector [1xN] of time (datetime)
 %   guess: first vector [1x6] guess for the fit
 % 

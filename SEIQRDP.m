@@ -14,6 +14,7 @@ function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0
 %   Npop: scalar: Total population of the sample
 %   E0: scalar [1x1]: Initial number of exposed cases
 %   I0: scalar [1x1]: Initial number of infectious cases
+%   Q0: scalar [1x1]: Initial number of quarantined cases
 %   R0: scalar [1x1]: Initial number of recovered cases
 %   D0: scalar [1x1]: Initial number of dead cases
 %   t: vector [1xN] of time (double; it cannot be a datetime)
