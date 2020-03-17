@@ -1,4 +1,4 @@
-function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(I,R,D,Npop,time,guess)
+function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,I0,E0,time,guess)
 % [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] =
 % fit_SEIQRDP(I,R,D,Npop,time,guess) estimates the parameters used in the
 % SEIQRDP function, used to model the time-evolution of an epidemic outbreak.
@@ -27,22 +27,24 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(I,R,D,Npop,ti
 
 %%
 
-options=optimset('TolX',1e-4,'TolFun',1e-4,'Display','iter');
-input = [I;R;D];
+options=optimset('TolX',1e-3,'TolFun',1e-3,'MaxFunEvals',500,'Display','iter');
+input = [Q;R;D];
 tTarget = datenum(time-time(1)); % Number of days
 t = tTarget(1):0.1:tTarget(end);
 dt = median(diff(t));
 
 
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
-Coeff = lsqcurvefit(@(para,t) modelFun1(para,t),guess,tTarget(:)',input,[0,0,0,0,0,0],[3,3,2,2,3,3],options);
+[Coeff,Resnorm] = lsqcurvefit(@(para,t) modelFun1(para,t),guess,tTarget(:)',input,zeros(1,numel(guess)),[2 2 2 2 0.5 2 0.5 2],options);
+
+% fprintf(['the squared 2-norm of the residual is ',num2str(Resnorm,3),' \n'])
 
 alpha1 = abs(Coeff(1));
 beta1 = abs(Coeff(2));
 gamma1 = abs(Coeff(3));
 delta1 = abs(Coeff(4));
-Lambda1 = abs(Coeff(5));
-Kappa1 = abs(Coeff(6));
+Lambda1 = abs(Coeff(5:6));
+Kappa1 = abs(Coeff(7:8));
 
 
     function [output] = SEIQRDP_for_fitting(para,t0)
@@ -51,15 +53,17 @@ Kappa1 = abs(Coeff(6));
         beta = abs(para(2));
         gamma = abs(para(3));
         delta = abs(para(4));
-        lambda0 = abs(para(5));
-        kappa0 = abs(para(6));
+        lambda0 = abs(para(5:6));
+        kappa0 = abs(para(7:8));
 
         
         %% Initial conditions
         N = numel(t);
         Y = zeros(7,N);
-        Y(1,1) = Npop-I(1)-R(1)-D(1);
-        Y(3,1) = I(1);
+        Y(1,1) = Npop-Q(1)-R(1)-D(1)-E0-I0;
+        Y(2,1) = E0;
+        Y(3,1) = I0;
+        Y(4,1) = Q(1);
         Y(5,1) = R(1);
         Y(6,1) = D(1);
         if round(sum(Y(:,1))-Npop)~=0
@@ -71,8 +75,10 @@ Kappa1 = abs(Coeff(6));
         % ODE reYution
         for ii=1:N-1
             
-            lambda = 0.03*(1-exp(-lambda0.*t(ii))); % I use these functions for illustrative purpose only
-            kappa = 0.06*exp(-kappa0.*t(ii)); % I use these functions for illustrative purpose only
+            lambda = lambda0(1)*(1-exp(-lambda0(2).*t(ii))); % I use these functions for illustrative purpose only
+            kappa = kappa0(1)*exp(-kappa0(2).*t(ii)); % I use these functions for illustrative purpose only    
+            
+            
             A = getA(alpha,gamma,delta,lambda,kappa);
             SI = Y(1,ii)*Y(3,ii);
             F = zeros(7,1);
@@ -81,17 +87,15 @@ Kappa1 = abs(Coeff(6));
         end
         
         
-        I0 = Y(3,1:N);
+        Q0 = Y(4,1:N);
         R0 = Y(5,1:N);
         D0 = Y(6,1:N);
         
-        I0 = interp1(t,I0,t0);
+        Q0 = interp1(t,Q0,t0);
         R0 = interp1(t,R0,t0);
         D0 = interp1(t,D0,t0);
         
-        output = [I0;R0;D0];
-%         output = I0;
-        
+        output = [Q0;R0;D0];
         
         
     end

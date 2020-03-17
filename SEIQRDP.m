@@ -1,4 +1,4 @@
-function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0,I0,R0,D0,t)
+function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0,I0,Q0,R0,D0,t)
 % [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda,kappa,Npop,E0,I0,R0,D0,t)
 % simulate the time-histories of an epidemic outbreak using a generalized
 % SEIR model.
@@ -34,9 +34,10 @@ function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0
 %% Initial conditions
 N = numel(t);
 Y = zeros(7,N);
-Y(1,1) = Npop-I0-E0-R0-D0;
+Y(1,1) = Npop-Q0-E0-R0-D0-I0;
 Y(2,1) = E0;
 Y(3,1) = I0;
+Y(4,1) = Q0;
 Y(5,1) = R0;
 Y(6,1) = D0;
 
@@ -48,12 +49,8 @@ modelFun = @(Y,A,F) A*Y + F;
 dt = median(diff(t));
 % ODE reYution
 for ii=1:N-1
-    
-    %     lambda0 = lambda; % cure rate
-    %     kappa0 = kappa; % cure rate
-    
-    lambda = 0.03*(1-exp(-lambda0.*t(ii))); % I use these functions for illustrative purpose only
-    kappa = 0.06*exp(-kappa0.*t(ii)); % I use these functions for illustrative purpose only
+    lambda = lambda0(1)*(1-exp(-lambda0(2).*t(ii))); % I use these functions for illustrative purpose only
+    kappa = kappa0(1)*exp(-kappa0(2).*t(ii)); % I use these functions for illustrative purpose only    
     
     A = getA(alpha,gamma,delta,lambda,kappa);
     SI = Y(1,ii)*Y(3,ii);
