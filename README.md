@@ -20,8 +20,6 @@ The present submission contains:
 - One example file Example2.mlx that use data from Johns Hopkins University for the COVID-19 epidemy [3] for Italy.
 - One data file DATA.mat, which gathers the data collected by Johns Hopkins University from January 22 to March 18
 
-That is the first version of the submission. It's probably full of typos that will be gradually corrected.
-
 Any question, comment or suggestion is welcome.
 
 References:
