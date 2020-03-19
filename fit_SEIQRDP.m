@@ -37,7 +37,8 @@ dt = median(diff(t));
 
 
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
-[Coeff,Resnorm] = lsqcurvefit(@(para,t) modelFun1(para,t),guess,tTarget(:)',input,zeros(1,numel(guess)),[2 2 2 2 0.5 2 0.5 2],options);
+[Coeff,Resnorm] = lsqcurvefit(@(para,t) modelFun1(para,t),...
+    guess,tTarget(:)',input,zeros(1,numel(guess)),[2 2 2 2 0.5 2 0.5 2],options);
 
 % fprintf(['the squared 2-norm of the residual is ',num2str(Resnorm,3),' \n'])
 
@@ -74,14 +75,12 @@ Kappa1 = abs(Coeff(7:8));
         %%
         modelFun = @(Y,A,F) A*Y + F;
         dt = median(diff(t));
+        
+         lambda = lambda0(1)*(1-exp(-lambda0(2).*t)); % I use these functions for illustrative purpose only
+         kappa = kappa0(1)*exp(-kappa0(2).*t); % I use these functions for illustrative purpose only    
         % ODE reYution
         for ii=1:N-1
-            
-            lambda = lambda0(1)*(1-exp(-lambda0(2).*t(ii))); % I use these functions for illustrative purpose only
-            kappa = kappa0(1)*exp(-kappa0(2).*t(ii)); % I use these functions for illustrative purpose only    
-            
-            
-            A = getA(alpha,gamma,delta,lambda,kappa);
+            A = getA(alpha,gamma,delta,lambda(ii),kappa(ii));
             SI = Y(1,ii)*Y(3,ii);
             F = zeros(7,1);
             F(1:2,1) = [-beta/Npop;beta/Npop].*SI;
