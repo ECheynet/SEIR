@@ -48,12 +48,14 @@ end
 %%
 modelFun = @(Y,A,F) A*Y + F;
 dt = median(diff(t));
-% ODE reYution
+% ODE resolution
+
+lambda = lambda0(1)*(1-exp(-lambda0(2).*t)); % I use these functions for illustrative purpose only
+kappa = kappa0(1)*exp(-kappa0(2).*t); % I use these functions for illustrative purpose only
+
+
 for ii=1:N-1
-    lambda = lambda0(1)*(1-exp(-lambda0(2).*t(ii))); % I use these functions for illustrative purpose only
-    kappa = kappa0(1)*exp(-kappa0(2).*t(ii)); % I use these functions for illustrative purpose only    
-    
-    A = getA(alpha,gamma,delta,lambda,kappa);
+    A = getA(alpha,gamma,delta,lambda(ii),kappa(ii));
     SI = Y(1,ii)*Y(3,ii);
     F = zeros(7,1);
     F(1:2,1) = [-beta/Npop;beta/Npop].*SI;
