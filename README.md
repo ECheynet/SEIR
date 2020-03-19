@@ -25,6 +25,8 @@ Any question, comment or suggestion is welcome.
 References:
 
 [1] https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#Bio-mathematical_deterministic_treatment_of_the_SIR_model
+
 [2] Peng, L., Yang, W., Zhang, D., Zhuge, C., & Hong, L. (2020). Epidemic analysis of COVID-19 in China by dynamical modeling. arXiv preprint arXiv:2002.06563.
+
 [3] https://github.com/CSSEGISandData/COVID-19
 
