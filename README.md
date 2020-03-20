@@ -16,9 +16,12 @@ The present submission contains:
 - A function SEIQRDP.m that is used to simulate the time histories of the infectious, recovered and dead cases (among others)
 - A function fit_SEIQRDP.m that estimates the eight parameters used in SEIQRDP.m in the least square sense.
 - One example file Example1.mlx that use only simulated data
-- One example file Example3.mlx that use data from Johns Hopkins University for the COVID-19 epidemy [3] for Hubei province (China).
-- One example file Example2.mlx that use data from Johns Hopkins University for the COVID-19 epidemy [3] for Italy.
+- One example file Example2.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Hubei province (China).
+- One example file Example3.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Italy.
+- One example file Example4.mlx that illustrates how the function fit_SEIQRDP.m is used in a for loop to be fitted to the data [3] from the different Chinese provinces.
 - One data file DATA.mat, which gathers the data collected by Johns Hopkins University from January 22 to March 18
+
+That is the first version of the submission. It's probably full of typos that will be gradually corrected.
 
 Any question, comment or suggestion is welcome.
 
@@ -29,4 +32,5 @@ References:
 [2] Peng, L., Yang, W., Zhang, D., Zhuge, C., & Hong, L. (2020). Epidemic analysis of COVID-19 in China by dynamical modeling. arXiv preprint arXiv:2002.06563.
 
 [3] https://github.com/CSSEGISandData/COVID-19
+
 
