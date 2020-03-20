@@ -1,4 +1,4 @@
-function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess)
+function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
 % [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] =
 % fit_SEIQRDP(I,R,D,Npop,time,guess) estimates the parameters used in the
 % SEIQRDP function, used to model the time-evolution of an epidemic outbreak.
@@ -29,19 +29,40 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,E0
 
 %%
 
-options=optimset('TolX',1e-3,'TolFun',1e-3,'MaxFunEvals',500,'Display','iter');
+%% Inputparseer
+p = inputParser();
+p.CaseSensitive = false;
+p.addOptional('tolX',1e-3);  %  option for optimset
+p.addOptional('tolFun',1e-3);  %  option for optimset
+p.addOptional('Display','iter'); % Display option for optimset
+p.parse(varargin{:});
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+tolX = p.Results.tolX ;
+tolFun = p.Results.tolFun ;
+Display  = p.Results.Display ;
+
+
+%% Options for lsqcurvfit
+
+options=optimset('TolX',tolX,'TolFun',tolFun,'MaxFunEvals',500,'Display',Display);
+%% Fitting the data
+
+% Write the target input into a matrix
 input = [Q;R;D];
+
 tTarget = datenum(time-time(1)); % Number of days
-t = tTarget(1):0.1:tTarget(end);
-dt = median(diff(t));
+t = tTarget(1):0.1:tTarget(end); % oversample to ensure that the algorithm converges
+dt = median(diff(t)); % get time step
 
 
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
-[Coeff,Resnorm] = lsqcurvefit(@(para,t) modelFun1(para,t),...
+
+% call Lsqcurvefit
+[Coeff] = lsqcurvefit(@(para,t) modelFun1(para,t),...
     guess,tTarget(:)',input,zeros(1,numel(guess)),[2 2 2 2 0.5 2 0.5 2],options);
 
-% fprintf(['the squared 2-norm of the residual is ',num2str(Resnorm,3),' \n'])
 
+%% Write the fitted coeff in the outputs
 alpha1 = abs(Coeff(1));
 beta1 = abs(Coeff(2));
 gamma1 = abs(Coeff(3));
@@ -49,6 +70,7 @@ delta1 = abs(Coeff(4));
 Lambda1 = abs(Coeff(5:6));
 Kappa1 = abs(Coeff(7:8));
 
+%% nested functions
 
     function [output] = SEIQRDP_for_fitting(para,t0)
 
@@ -103,25 +125,18 @@ Kappa1 = abs(Coeff(7:8));
     function [A] = getA(alpha,gamma,delta,lambda,kappa)
         
         A = zeros(7);
-        
         % S
         A(1,1) = -alpha;
-        
         % E
         A(2,2) = -gamma;
-        
         % I
         A(3,2:3) = [gamma,-delta];
-        
         % Q
         A(4,3:4) = [delta,-kappa-lambda];
-        
         % R
         A(5,4) = lambda;
-        
         % D
         A(6,4) = kappa;
-        
         % P
         A(7,1) = alpha;
         
