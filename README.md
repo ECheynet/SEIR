@@ -6,6 +6,8 @@ matlab code for a Generalized SEIR Epidemic Model (fitting and computation)
 
 
 
+
+
 To learn how to solve systems of non-linear coupled differential equations, I ended up playing with compartmental models in epidemiology, in particular, compartmental SIR models and all their derived models [1]. I took the generalized SEIR model by ref. [2] because it deals with a contemporary topic. There exist other types of generalized SEIR model that can be explored, but here I only use a single one for the sake of simplicity. The numerical implementation is done from scratch except for the fitting, that relies on the function "lsqcurvfit".
 
 In version 1.2 and above, I also implemented two of the parameters as explicit functions of the time: the death rate and recovery rate. The idea behind this time-dependency as that the death rate (due to the disease) should be zero after an infinite time. If the death rate is kept constant, the number of death may become overestimated. As the same time, the recovery rate is also increasing toward a threshold value. Births and natural death are not modelled here. This means that the total population, including the deads, is kept constant.
@@ -19,7 +21,7 @@ The present submission contains:
 - One example file Example2.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Hubei province (China).
 - One example file Example3.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Italy.
 - One example file Example4.mlx that illustrates how the function fit_SEIQRDP.m is used in a for loop to be fitted to the data [3] from the different Chinese provinces.
-- One data file DATA.mat, which gathers the data collected by Johns Hopkins University from January 22 to March 18
+- One function getDataCOVID, which read from [3] the data collected by Johns Hopkins University.
 
 That is the first version of the submission. It's probably full of typos that will be gradually corrected.
 
@@ -32,5 +34,3 @@ References:
 [2] Peng, L., Yang, W., Zhang, D., Zhuge, C., & Hong, L. (2020). Epidemic analysis of COVID-19 in China by dynamical modeling. arXiv preprint arXiv:2002.06563.
 
 [3] https://github.com/CSSEGISandData/COVID-19
-
-
