@@ -50,6 +50,10 @@ options=optimset('TolX',tolX,'TolFun',tolFun,'MaxFunEvals',500,'Display',Display
 % Write the target input into a matrix
 input = [Q;R;D];
 
+if size(time,1)>size(time,2) && size(time,2)==1,    time = time';end
+if size(time,1)>1 && size(time,2)>1,  error('Time should be a vector');end
+
+
 tTarget = datenum(time-time(1)); % Number of days
 t = tTarget(1):0.1:tTarget(end); % oversample to ensure that the algorithm converges
 dt = median(diff(t)); % get time step
@@ -59,7 +63,7 @@ modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous f
 
 % call Lsqcurvefit
 [Coeff] = lsqcurvefit(@(para,t) modelFun1(para,t),...
-    guess,tTarget(:)',input,zeros(1,numel(guess)),[2 2 2 2 0.5 2 0.5 2],options);
+    guess,tTarget(:)',input,zeros(1,numel(guess)),[2 2 2 2 1 2 1 2],options);
 
 
 %% Write the fitted coeff in the outputs
