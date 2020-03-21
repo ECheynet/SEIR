@@ -22,8 +22,8 @@ opts.VariableTypes = ["string", "string", repmat("double",1,Ndays+3)];
 opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 % Specify variable properties
-opts = setvaropts(opts, ["ProvinceState", "CountryRegion"], "WhitespaceRule", "preserve");
-opts = setvaropts(opts, ["ProvinceState", "CountryRegion"], "EmptyFieldRule", "auto");
+% opts = setvaropts(opts, ["ProvinceState", "CountryRegion"], "WhitespaceRule", "preserve");
+% opts = setvaropts(opts, ["ProvinceState", "CountryRegion"], "EmptyFieldRule", "auto");
 
 
 %% Import the data
