@@ -6,7 +6,7 @@ function tableCOVIDItaly = getDataCOVID_ITA(fileURL, dataLines)
 % References:
 % [1] https://github.com/pcm-dpc/COVID-19
 % 
-% Author: Matteo Seclì - Last modified - 22-03-2020
+% Author: Matteo SeclÃ¬ - Last modified - 22-03-2020
 % 
 % see also fit_SEIQRDP.m SEIQRDP.m
 
@@ -36,7 +36,7 @@ opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 % Specify variable properties
-opts = setvaropts(opts, "Date", "InputFormat", "yyyy-MM-dd HH:mm:ss");
+opts = setvaropts(opts, "Date", "InputFormat", "yyyy-MM-dd HH:mm:ss"); % Use "Format","yyyy-MM-dd'T'HH:mm:ss" from Mar 23, 2020 on
 
 % Download the CSV file
 websave('dummy.csv',fileURL);
