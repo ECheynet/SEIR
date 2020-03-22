@@ -55,8 +55,9 @@ if size(time,1)>size(time,2) && size(time,2)==1,    time = time';end
 if size(time,1)>1 && size(time,2)>1,  error('Time should be a vector');end
 
 
-tTarget = datenum(time-time(1)); % Number of days
-t = tTarget(1):0.1:tTarget(end); % oversample to ensure that the algorithm converges
+ddt = 0.1;
+tTarget = ceil(datenum(time-time(1))/ddt)*ddt; % Number of days
+t = tTarget(1):ddt:tTarget(end); % oversample to ensure that the algorithm converges
 dt = median(diff(t)); % get time step
 
 
