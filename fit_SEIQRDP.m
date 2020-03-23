@@ -56,7 +56,9 @@ if size(time,1)>size(time,2) && size(time,2)==1,    time = time';end
 if size(time,1)>1 && size(time,2)>1,  error('Time should be a vector');end
 
 fs = 1./dt;
-tTarget = round(datenum(time-time(1))*fs)/fs; % Number of days with one decimal accuracy
+% tTarget = round(datenum(time-time(1))*fs)/fs; % Number of days with one decimal 
+tTarget = round(datenum(time-time(1))*fs)/fs; % Number of days with one decimal 
+
 t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm converges
 
 
