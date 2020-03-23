@@ -36,12 +36,13 @@ p.CaseSensitive = false;
 p.addOptional('tolX',1e-3);  %  option for optimset
 p.addOptional('tolFun',1e-3);  %  option for optimset
 p.addOptional('Display','iter'); % Display option for optimset
+p.addOptional('dt',0.1); % time step for the fitting
 p.parse(varargin{:});
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 tolX = p.Results.tolX ;
 tolFun = p.Results.tolFun ;
 Display  = p.Results.Display ;
-
+dt  = p.Results.dt ;
 
 %% Options for lsqcurvfit
 
@@ -54,10 +55,10 @@ input = [Q;R;D];
 if size(time,1)>size(time,2) && size(time,2)==1,    time = time';end
 if size(time,1)>1 && size(time,2)>1,  error('Time should be a vector');end
 
+fs = 1./dt;
+tTarget = round(datenum(time-time(1))*fs)/fs; % Number of days with one decimal accuracy
+t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm converges
 
-tTarget = datenum(time-time(1)); % Number of days
-t = tTarget(1):0.1:tTarget(end); % oversample to ensure that the algorithm converges
-dt = median(diff(t)); % get time step
 
 
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
@@ -101,7 +102,6 @@ Kappa1 = abs(Coeff(7:8));
         end
         %%
         modelFun = @(Y,A,F) A*Y + F;
-        dt = median(diff(t));
         
          lambda = lambda0(1)*(1-exp(-lambda0(2).*t)); % I use these functions for illustrative purpose only
          kappa = kappa0(1)*exp(-kappa0(2).*t); % I use these functions for illustrative purpose only    
