@@ -12,7 +12,7 @@ function [tableConfirmed,tableDeaths,tableRecovered,time] = getDataCOVID()
 
 %% Options and names
 status = {'Confirmed','Deaths','Recovered'};
-Ndays = datenum(today)-datenum(2020,01,22)-1; % minus one day because the data are updated with a delay of 24 h
+Ndays = floor(datenum(now))-datenum(2020,01,22)-1; % minus one day because the data are updated with a delay of 24 h
 
 
 opts = delimitedTextImportOptions("NumVariables", Ndays+5);
