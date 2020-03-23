@@ -1,4 +1,4 @@
-# SEIR
+# Generalized SEIR Epidemic Model (fitting and computation)
 matlab code for a Generalized SEIR Epidemic Model (fitting and computation)
 
 [![View Generalized SEIR Epidemic Model (fitting and computation) on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://se.mathworks.com/matlabcentral/fileexchange/74545-generalized-seir-epidemic-model-fitting-and-computation)
@@ -20,8 +20,11 @@ The present submission contains:
 - One example file Example1.mlx that use only simulated data
 - One example file Example2.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Hubei province (China).
 - One example file Example3.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Italy.
+- One file "ItalianRegions.mlx" written by Matteo Secli (https://github.com/matteosecli) that I have modified for a slightly more robust fitting.
 - One example file Example4.mlx that illustrates how the function fit_SEIQRDP.m is used in a for loop to be fitted to the data [3] from the different Chinese provinces.
 - One function getDataCOVID, which read from [3] the data collected by Johns Hopkins University.
+- One function getDataCOVID_ITA written by Matteo Secli (https://github.com/matteosecli), that  collects the updated data of the COVID-19 pandemic in Italy from the Italian governement [4]
+
 
 That is the first version of the submission. It's probably full of typos that will be gradually corrected.
 
@@ -34,3 +37,5 @@ References:
 [2] Peng, L., Yang, W., Zhang, D., Zhuge, C., & Hong, L. (2020). Epidemic analysis of COVID-19 in China by dynamical modeling. arXiv preprint arXiv:2002.06563.
 
 [3] https://github.com/CSSEGISandData/COVID-19
+
+[4] https://github.com/pcm-dpc/COVID-19
