@@ -21,9 +21,9 @@ The present submission contains:
 - One example file Example3.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Italy.
 - One file "ItalianRegions.mlx" written by Matteo Secli (https://github.com/matteosecli) that I have modified for a slightly more robust fitting.
 - One example file Example4.mlx that illustrates how the function fit_SEIQRDP.m is used in a for loop to be fitted to the data [3] from the different Chinese provinces.
+- One example "uncertaintiesIssues.mlx" illustrating the danger of fitting limited data sets.
 - One function getDataCOVID, which read from [3] the data collected by Johns Hopkins University.
 - One function getDataCOVID_ITA written by Matteo Secli (https://github.com/matteosecli), that  collects the updated data of the COVID-19 pandemic in Italy from the Italian governement [4]
-
 
 That is the first version of the submission. It's probably full of typos that will be gradually corrected.
 
