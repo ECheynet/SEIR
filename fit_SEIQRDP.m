@@ -1,5 +1,5 @@
-function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
-% [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = 
+function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,varargout] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
+% [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,varargout] = 
 % fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin) estimates the 
 % parameters used in the SEIQRDP function, used to model the time-evolution
 % of an epidemic outbreak.
@@ -14,6 +14,11 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,E0
 %   I0: scalar [1x1]: Initial number of infectious cases
 %   time: vector [1xN] of time (datetime)
 %   guess: first vector [1x6] guess for the fit
+%   optionals
+%       -tolFun: tolerance  option for optimset
+%       -tolX: tolerance  option for optimset
+%       -Display: Display option for optimset
+%       -dt: time step for the fitting function
 % 
 % Output
 % 
@@ -23,8 +28,12 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Q,R,D,Npop,E0
 %   delta: scalar [1x1]: fitted  inverse of the average quarantine time
 %   lambda: scalar [1x1]: fitted  cure rate
 %   kappa: scalar [1x1]: fitted  mortality rate
+%   optional:
+%       - residual
+%       - Jcobian
+%       - The function @SEIQRDP_for_fitting
 % 
-% Author: E. Cheynet - UiB - last modified 16-03-2020
+% Author: E. Cheynet - UiB - last modified 24-03-2020
 % 
 % see also SEIQRDP.m
 
@@ -56,7 +65,6 @@ if size(time,1)>size(time,2) && size(time,2)==1,    time = time';end
 if size(time,1)>1 && size(time,2)>1,  error('Time should be a vector');end
 
 fs = 1./dt;
-% tTarget = round(datenum(time-time(1))*fs)/fs; % Number of days with one decimal 
 tTarget = round(datenum(time-time(1))*fs)/fs; % Number of days with one decimal 
 
 t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm converges
@@ -66,8 +74,22 @@ t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm conver
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
 
 % call Lsqcurvefit
-[Coeff] = lsqcurvefit(@(para,t) modelFun1(para,t),...
+[Coeff,~,residual,~,~,~,jacobian] = lsqcurvefit(@(para,t) modelFun1(para,t),...
     guess,tTarget(:)',input,zeros(1,numel(guess)),[2 2 2 2 1 2 1 2],options);
+
+
+if nargout ==7
+    varargout{1} = residual;
+elseif nargout==8
+    varargout{1} = residual;
+    varargout{2} = jacobian;
+elseif nargout==9
+    varargout{1} = residual;
+    varargout{2} = jacobian;
+    varargout{3} = modelFun1;
+elseif nargout>9
+    error('Too many output specified')
+end
 
 
 %% Write the fitted coeff in the outputs
