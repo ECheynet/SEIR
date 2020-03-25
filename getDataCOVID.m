@@ -11,7 +11,8 @@ function [tableConfirmed,tableDeaths,tableRecovered,time] = getDataCOVID()
 % see also fit_SEIQRDP.m SEIQRDP.m
 
 %% Options and names
-status = {'Confirmed','Deaths','Recovered'};
+status = {'confirmed','deaths','recovered'};
+
 Ndays = floor(datenum(now))-datenum(2020,01,22)-1; % minus one day because the data are updated with a delay of 24 h
 
 
@@ -28,8 +29,10 @@ opts.EmptyLineRule = "read";
 
 %% Import the data
 
+
+
 for ii=1:numel(status)
-    fileName = ['https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-',status{ii},'.csv'];
+    fileName = ['https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_',status{ii},'_global.csv'];
     urlwrite(fileName,'dummy.csv');
     if strcmpi(status{ii},'Confirmed')
         tableConfirmed =readtable('dummy.csv', opts);
