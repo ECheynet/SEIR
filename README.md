@@ -23,7 +23,6 @@ The present submission contains:
 - One function getDataCOVID, which read from [3] the data collected by Johns Hopkins University.
 - One function getDataCOVID_ITA written by Matteo Secli (https://github.com/matteosecli), that  collects the updated data of the COVID-19 pandemic in Italy from the Italian governement [4]
 
-That is the first version of the submission. It's probably full of typos that will be gradually corrected.
 
 Any question, comment or suggestion is welcome.
 
