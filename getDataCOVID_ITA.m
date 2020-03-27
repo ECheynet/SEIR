@@ -29,7 +29,7 @@ opts.Delimiter = ",";
 
 % Specify column names and types
 opts.VariableNames = ["Date"    , "CountryCode", "RegionCode", "RegionName", "Lat"   , "Long"  , "HospitalizedWithSymptoms", "HospitalizedInIntensiveCare", "Hospitalized", "HomeConfinement", "Quarantined", "NewQuarantined", "Recovered", "Deaths", "Confirmed" , "Swabs" ];
-opts.VariableTypes = ["datetime", "string"     , "uint8"     , "string"    , "double", "double", "double"                  , "double"                     , "double"      , "double"         , "double"     , "double"        , "double"   , "double", "double"    , "double"];
+opts.VariableTypes = ["string", "string"     , "uint8"     , "string"    , "double", "double", "double"                  , "double"                     , "double"      , "double"         , "double"     , "double"        , "double"   , "double", "double"    , "double"];
 
 % Specify file level properties
 opts.ExtraColumnsRule = "ignore";
