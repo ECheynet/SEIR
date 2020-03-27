@@ -18,7 +18,7 @@ The present submission contains:
 - A function fit_SEIQRDP.m that estimates the eight parameters used in SEIQRDP.m in the least square sense.
 - One example file Example1.mlx that use only simulated data
 - One example file Example2.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Hubei province (China).
-- One example file Example3.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Italy.
+- One example file Example3.mlx that use data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for South Korea.
 - One file "ItalianRegions.mlx" written by Matteo Secli (https://github.com/matteosecli) that I have modified for a slightly more robust fitting.
 - One example file ChineseProvinces.mlx that illustrates how the function fit_SEIQRDP.m is used in a for loop to be fitted to the data [3] from the different Chinese provinces.
 - One example "uncertaintiesIssues.mlx" illustrating the danger of fitting limited data sets.
