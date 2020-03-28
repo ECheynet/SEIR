@@ -59,6 +59,9 @@ options=optimset('TolX',tolX,'TolFun',tolFun,'MaxFunEvals',500,'Display',Display
 %% Fitting the data
 
 % Write the target input into a matrix
+Q(Q<0)=0; % negative values are not possible
+R(R<0)=0; % negative values are not possible
+D(D<0)=0; % negative values are not possible
 input = [Q;R;D];
 
 if size(time,1)>size(time,2) && size(time,2)==1,    time = time';end
