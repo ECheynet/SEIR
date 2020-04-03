@@ -42,8 +42,8 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,varargout] = fit_SEIQRDP(Q,R
 %% Inputparseer
 p = inputParser();
 p.CaseSensitive = false;
-p.addOptional('tolX',1e-3);  %  option for optimset
-p.addOptional('tolFun',1e-3);  %  option for optimset
+p.addOptional('tolX',1e-4);  %  option for optimset
+p.addOptional('tolFun',1e-4);  %  option for optimset
 p.addOptional('Display','iter'); % Display option for optimset
 p.addOptional('dt',0.1); % time step for the fitting
 p.parse(varargin{:});
@@ -55,14 +55,24 @@ dt  = p.Results.dt ;
 
 %% Options for lsqcurvfit
 
-options=optimset('TolX',tolX,'TolFun',tolFun,'MaxFunEvals',500,'Display',Display);
+options=optimset('TolX',tolX,'TolFun',tolFun,'MaxFunEvals',800,'Display',Display);
 %% Fitting the data
+
+
+    
+
 
 % Write the target input into a matrix
 Q(Q<0)=0; % negative values are not possible
 R(R<0)=0; % negative values are not possible
 D(D<0)=0; % negative values are not possible
-input = [Q;R;D];
+
+if isempty(R)
+    warning(' No data available for "Recovered". The recovery rate is set as constant')
+    input = [Q;D];
+else
+    input = [Q;R;D];
+end
 
 if size(time,1)>size(time,2) && size(time,2)==1,    time = time';end
 if size(time,1)>1 && size(time,2)>1,  error('Time should be a vector');end
@@ -78,7 +88,7 @@ modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous f
 
 % call Lsqcurvefit
 [Coeff,~,residual,~,~,~,jacobian] = lsqcurvefit(@(para,t) modelFun1(para,t),...
-    guess,tTarget(:)',input,zeros(1,numel(guess)),[2 2 2 2 1 2 1 2],options);
+    guess,tTarget(:)',input,zeros(1,numel(guess)),[1 2 1 1 1 2 1 2],options);
 
 
 if nargout ==7
@@ -96,12 +106,26 @@ end
 
 
 %% Write the fitted coeff in the outputs
+
 alpha1 = abs(Coeff(1));
 beta1 = abs(Coeff(2));
 gamma1 = abs(Coeff(3));
 delta1 = abs(Coeff(4));
 Lambda1 = abs(Coeff(5:6));
 Kappa1 = abs(Coeff(7:8));
+
+if isempty(R)
+    Lambda1(2)=0;
+end
+
+
+
+
+
+
+
+
+
 
 %% nested functions
 
@@ -118,20 +142,33 @@ Kappa1 = abs(Coeff(7:8));
         %% Initial conditions
         N = numel(t);
         Y = zeros(7,N);
-        Y(1,1) = Npop-Q(1)-R(1)-D(1)-E0-I0;
         Y(2,1) = E0;
         Y(3,1) = I0;
         Y(4,1) = Q(1);
-        Y(5,1) = R(1);
+        if ~isempty(R),
+            Y(5,1) = R(1);
+            Y(1,1) = Npop-Q(1)-R(1)-D(1)-E0-I0;
+        else
+            Y(1,1) = Npop-Q(1)-D(1)-E0-I0;
+        end
         Y(6,1) = D(1);
+        
         if round(sum(Y(:,1))-Npop)~=0
             error('the sum must be zero because the total population (including the deads) is assumed constant');
         end
         %%
         modelFun = @(Y,A,F) A*Y + F;
         
-         lambda = lambda0(1)*(1-exp(-lambda0(2).*t)); % I use these functions for illustrative purpose only
-         kappa = kappa0(1)*exp(-kappa0(2).*t); % I use these functions for illustrative purpose only    
+         
+         
+         if ~isempty(R)
+                  lambda = lambda0(1)*(1-exp(-lambda0(2).*t)); % I use these functions for illustrative purpose only
+                  kappa = kappa0(1)*exp(-kappa0(2).*t); 
+         else
+             lambda = lambda0(1).*ones(1,N); % I use these functions for illustrative purpose only
+             kappa = kappa0(1)*exp(-kappa0(2).*t); 
+         end
+                  
         % ODE reYution
         for ii=1:N-1
             A = getA(alpha,gamma,delta,lambda(ii),kappa(ii));
@@ -149,9 +186,11 @@ Kappa1 = abs(Coeff(7:8));
         Q0 = interp1(t,Q0,t0);
         R0 = interp1(t,R0,t0);
         D0 = interp1(t,D0,t0);
-        
-        output = [Q0;R0;D0];
-        
+        if ~isempty(R),
+            output = [Q0;R0;D0];
+        else
+            output = [Q0;D0];
+        end
         
     end
     function [A] = getA(alpha,gamma,delta,lambda,kappa)
