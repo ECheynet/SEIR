@@ -22,7 +22,7 @@ The present submission contains:
 - One file "FrenchRegions.mlx" that gives another example for Data collected in France. The data quality is not as good as expected, so the fitting is unlikely to provide reliable parameter estimates.
 - One example file ChineseProvinces.mlx that illustrates how the function fit_SEIQRDP.m is used in a for loop to be fitted to the data [3] from the different Chinese provinces.
 - One example "uncertaintiesIssues.mlx" illustrating the danger of fitting limited data sets.
-- One example "Example_US_cities.mlx" that illustrates the fitting wuehn "recovered" data are not available.
+- One example "Example_US_cities.mlx" that illustrates the fitting when "recovered" data are not available.
 - One function getDataCOVID, which read from [3] the data collected by Johns Hopkins University.
 - One function getDataCOVID_ITA written by Matteo Secli (https://github.com/matteosecli), that collects the updated data of the COVID-19 pandemic in Italy from the Italian government [4]
 - One function getDataCOVID_FRA that collects the updated data in France from [5]
