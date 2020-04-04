@@ -68,7 +68,7 @@ R(R<0)=0; % negative values are not possible
 D(D<0)=0; % negative values are not possible
 
 if isempty(R)
-    warning(' No data available for "Recovered". The recovery rate is set as constant')
+    warning(' No data available for "Recovered" ')
     input = [Q;D];
 else
     input = [Q;R;D];
@@ -114,9 +114,9 @@ delta1 = abs(Coeff(4));
 Lambda1 = abs(Coeff(5:6));
 Kappa1 = abs(Coeff(7:8));
 
-if isempty(R)
-    Lambda1(2)=0;
-end
+% if isempty(R)
+%     Lambda1(2)=0;
+% end
 
 
 
@@ -161,13 +161,13 @@ end
         
          
          
-         if ~isempty(R)
+%          if ~isempty(R)
                   lambda = lambda0(1)*(1-exp(-lambda0(2).*t)); % I use these functions for illustrative purpose only
                   kappa = kappa0(1)*exp(-kappa0(2).*t); 
-         else
-             lambda = lambda0(1).*ones(1,N); % I use these functions for illustrative purpose only
-             kappa = kappa0(1)*exp(-kappa0(2).*t); 
-         end
+%          else
+%              lambda = lambda0(1).*ones(1,N); % I use these functions for illustrative purpose only
+%              kappa = kappa0(1)*exp(-kappa0(2).*t); 
+%          end
                   
         % ODE reYution
         for ii=1:N-1
