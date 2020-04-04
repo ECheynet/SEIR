@@ -178,18 +178,18 @@ Kappa1 = abs(Coeff(7:8));
             Y(:,ii+1) = RK4(modelFun,Y(:,ii),A,F,dt);
         end
         
+%         I1 = Y(3,1:N);
+        Q1 = Y(4,1:N);
+        R1 = Y(5,1:N);
+        D1 = Y(6,1:N);
         
-        Q0 = Y(4,1:N);
-        R0 = Y(5,1:N);
-        D0 = Y(6,1:N);
-        
-        Q0 = interp1(t,Q0,t0);
-        R0 = interp1(t,R0,t0);
-        D0 = interp1(t,D0,t0);
+        Q1 = interp1(t,Q1,t0);
+        R1 = interp1(t,R1,t0);
+        D1 = interp1(t,D1,t0);
         if ~isempty(R),
-            output = [Q0;R0;D0];
+            output = [Q1;R1;D1];
         else
-            output = [Q0;D0];
+            output = [Q1+R1;D1];
         end
         
     end
