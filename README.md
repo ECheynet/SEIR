@@ -2,13 +2,9 @@
 
 [![View Generalized SEIR Epidemic Model (fitting and computation) on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://se.mathworks.com/matlabcentral/fileexchange/74545-generalized-seir-epidemic-model-fitting-and-computation)
 
+A generalized SEIR model with seven states propsoed by ref. [2]  is numerically implemented. There exist other types of generalized SEIR model that can be explored, but here I only use a single one for the sake of simplicity. The numerical implementation is done from scratch except for the fitting, that relies on the function "lsqcurvfit".
 
-
-
-
-To learn how to solve systems of non-linear coupled differential equations, I ended up playing with compartmental models in epidemiology, in particular, compartmental SIR models and all their derived models [1]. I took the generalized SEIR model by ref. [2] because it deals with a contemporary topic. There exist other types of generalized SEIR model that can be explored, but here I only use a single one for the sake of simplicity. The numerical implementation is done from scratch except for the fitting, that relies on the function "lsqcurvfit".
-
-In version 1.2 and above, I also implemented two of the parameters as explicit functions of the time: the death rate and recovery rate. The idea behind this time-dependency as that the death rate (due to the disease) should be zero after an infinite time. If the death rate is kept constant, the number of death may become overestimated. As the same time, the recovery rate is also increasing toward a threshold value. Births and natural death are not modelled here. This means that the total population, including the deads, is kept constant.
+One major difference with respect to ref. [2] is the expression of the death rate and recovery rate, which are here explicit functions of the time. The idea behind this time-dependency as that the death rate (due to the disease) should be zero after an infinite time. If the death rate is kept constant, the number of death may become overestimated. As the same time, the recovery rate is also increasing toward a threshold value. Births and natural death are not modelled here. This means that the total population, including the deads, is kept constant.
 
 Note that ref. [2] is a preprint that is not peer-reviewed and I am not qualified enough to judge the quality of the paper.
 
