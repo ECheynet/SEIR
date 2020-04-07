@@ -2,12 +2,14 @@
 
 [![View Generalized SEIR Epidemic Model (fitting and computation) on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://se.mathworks.com/matlabcentral/fileexchange/74545-generalized-seir-epidemic-model-fitting-and-computation)
 
+## Description
 A generalized SEIR model [1] with seven states, as proposed by ref. [2]  is numerically implemented. There exist other types of generalized SEIR model that can be explored, but here I only use a single one for the sake of simplicity. The numerical implementation is done from scratch except for the fitting, that relies on the function "lsqcurvfit".
 
 One major difference with respect to ref. [2] is the expression of the death rate and recovery rate, which are here explicit functions of the time. The idea behind this time-dependency as that the death rate (due to the disease) should be zero after an infinite time. If the death rate is kept constant, the number of death may become overestimated. As the same time, the recovery rate is also increasing toward a threshold value. Births and natural death are not modelled here. This means that the total population, including the deads, is kept constant.
 
 Note that ref. [2] is a preprint that is not peer-reviewed and I am not qualified enough to judge the quality of the paper.
 
+## Content
 The present submission contains:
 - A function SEIQRDP.m that is used to simulate the time histories of the infectious, recovered and dead cases (among others)
 - A function fit_SEIQRDP.m that estimates the eight parameters used in SEIQRDP.m in the least square sense.
@@ -26,7 +28,7 @@ The present submission contains:
 
 Any question, comment or suggestion is welcome.
 
-References:
+## References
 
 [1] https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#Bio-mathematical_deterministic_treatment_of_the_SIR_model
 
@@ -40,10 +42,11 @@ References:
 
 
 
-## Example
+## Example (case of COVID-19 in Italy) 
+
+The fitting of the extended SEIR model to real data provides the following results:
 
 ![Active, recoverd and dceased cases in italy](Italy.png)
-
 
 
 
