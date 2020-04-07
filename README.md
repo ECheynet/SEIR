@@ -42,8 +42,8 @@ References:
 
 ## Example
 
-![Active, recoverd and dceased cases in italy](/italy.png)
-Format: ![Alt Text](url)
+![Active, recoverd and dceased cases in italy](Italy.png)
+Format: ![AActive, recoverd and dceased cases in italy]](https://github.com/ECheynet/SEIR/blob/master/Italy.png)
 
 
 
