@@ -38,3 +38,12 @@ References:
 
 [5] https://github.com/cedricguadalupe/FRANCE-COVID-19
 
+
+
+## Example
+
+![Active, recoverd and dceased cases in italy](/italy.png)
+Format: ![Alt Text](url)
+
+
+
