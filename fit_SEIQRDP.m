@@ -88,7 +88,7 @@ modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous f
 
 % call Lsqcurvefit
 [Coeff,~,residual,~,~,~,jacobian] = lsqcurvefit(@(para,t) modelFun1(para,t),...
-    guess,tTarget(:)',input,zeros(1,numel(guess)),[1 2 1 1 1 2 1 2],options);
+    guess,tTarget(:)',input,zeros(1,numel(guess)),[1 3 1 1 2 3 2 2],options);
 
 
 if nargout ==7
