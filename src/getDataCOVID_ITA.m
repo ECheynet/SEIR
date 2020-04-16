@@ -49,6 +49,4 @@ fid = fopen('dummy.csv');
 tableCOVIDItaly = readtable('dummy.csv', opts);
 fclose(fid);
 delete('dummy.csv')
-
-
 end
