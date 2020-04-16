@@ -1,5 +1,6 @@
-clearvars;close all;clc;
-addpath('../common/');
+clearvars; close all; clc;
+addpath('../common/SEIQRDP/');
+addpath('../common/stats/');
 
 %% get data
 tableCOVIDItaly = getData();
@@ -40,8 +41,8 @@ t = [0:N-1].*dt;
 
 %% fit
 % initial conditions
-E0 = Confirmed (1); % Initial number of exposed cases. Unknown but unlikely to be zero.
-I0 = Confirmed (1); % Initial number of infectious cases. Unknown but unlikely to be zero.
+E0 = Confirmed(1); % Initial number of exposed cases. Unknown but unlikely to be zero.
+I0 = Confirmed(1); % Initial number of infectious cases. Unknown but unlikely to be zero.
 Q0 = Quarantined(1);
 R0 = Recovered (1);
 D0 = Deaths (1);
@@ -56,7 +57,7 @@ kappa_guess = [0.02, 0.05]; % death rate
 guess = [alpha_guess, beta_guess, 1/LT_guess, Q_guess, lambda_guess, kappa_guess];
 
 % do the fit
-[alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit_SEIQRDP(Quarantined,Recovered,Deaths,Npop,E0,I0,time,guess,'Display','off');
+[alpha1,beta1,gamma1,delta1,Lambda1,Kappa1] = fit(Quarantined,Recovered,Deaths,Npop,E0,I0,time,guess,'Display','off');
 
 %% apply model with fitted parameters
 [S,E,I,Q,R,D,P] = SEIQRDP(alpha1, beta1,gamma1,delta1,Lambda1,Kappa1,Npop,E0,I0,Q0,R0,D0,t);

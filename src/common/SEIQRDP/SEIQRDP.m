@@ -1,16 +1,13 @@
 function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0,I0,Q0,R0,D0,t)
-% [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda,kappa,Npop,E0,I0,R0,D0,t)
-% simulate the time-histories of an epidemic outbreak using a generalized
-% SEIR model.
+% Simulate the time-histories of an epidemic outbreak using gSEIR (generalized SEIR) model
 %
 % Input
-%
-%   alpha: scalar [1x1]: fitted protection rate
-%   beta: scalar [1x1]: fitted  infection rate
-%   gamma: scalar [1x1]: fitted  Inverse of the average latent time
-%   delta: scalar [1x1]: fitted  inverse of the average quarantine time
-%   lambda: scalar [1x1]: fitted  cure rate
-%   kappa: scalar [1x1]: fitted  mortality rate
+%   alpha: scalar [1x1]: protection rate
+%   beta: scalar [1x1]: infection rate
+%   gamma: scalar [1x1]: inverse of the average latent time
+%   delta: scalar [1x1]: inverse of the average quarantine time
+%   lambda: scalar [1x1]: cure rate
+%   kappa: scalar [1x1]: mortality rate
 %   Npop: scalar: Total population of the sample
 %   E0: scalar [1x1]: Initial number of exposed cases
 %   I0: scalar [1x1]: Initial number of infectious cases
@@ -27,27 +24,21 @@ function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0
 %   R: vector [1xN] of the target time-histories of the recovered cases
 %   D: vector [1xN] of the target time-histories of the dead cases
 %   P: vector [1xN] of the target time-histories of the insusceptible cases
-%
-% Author: E. Cheynet - UiB - last modified 16-03-2020
-%
-% see also fit_SEIQRDP.m
 
 %% Initial conditions
 N = numel(t);
 Y = zeros(7,N);
-Y(1,1) = Npop-Q0-E0-R0-D0-I0;
-Y(2,1) = E0;
-Y(3,1) = I0;
-Y(4,1) = Q0;
-Y(5,1) = R0;
-Y(6,1) = D0;
+Y(1,1) = Npop-Q0-E0-R0-D0-I0;  % susceptible
+Y(2,1) = E0;  % exposed
+Y(3,1) = I0;  % infectious
+Y(4,1) = Q0;  % quarantined
+Y(5,1) = R0;  % recovered
+Y(6,1) = D0;  % dead
 
-if round(sum(Y(:,1))-Npop)~=0
-    error('the sum must be zero because the total population (including the deads) is assumed constant');
-end
-%%
+%% Matrix version of gSEIR model
 modelFun = @(Y,A,F) A*Y + F;
 dt = median(diff(t));
+
 % ODE resolution
 
 lambda = lambda0(1)*(1-exp(-lambda0(2).*t)); % I use these functions for illustrative purpose only
@@ -70,8 +61,6 @@ Q = Y(4,1:N);
 R = Y(5,1:N);
 D = Y(6,1:N);
 P = Y(7,1:N);
-
-
 
     function [A] = getA(alpha,gamma,delta,lambda,kappa)
         A = zeros(7);
@@ -99,7 +88,4 @@ P = Y(7,1:N);
         % output
         Y = Y + (1/6)*(k_1+2*k_2+2*k_3+k_4)*dt;
     end
-
 end
-
-
