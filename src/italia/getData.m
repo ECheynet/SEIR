@@ -1,14 +1,6 @@
 function tableCOVIDItaly = getData(fileURL, dataLines)
-% The function tableCOVIDItaly = getDataCOVID
-% collects the updated data of the COVID-19 pandemic in Italy from the
-% Italian governement [1]
-% 
-% References:
-% [1] https://github.com/pcm-dpc/COVID-19
-% 
-% Author: Matteo Seclì - Last modified - 22-03-2020
-% 
-% see also fit_SEIQRDP.m SEIQRDP.m
+% Collects the updated data of the COVID-19 pandemic in Italy from the
+% Italian governement (https://github.com/pcm-dpc/COVID-19)
 
 %% Input handling
 % If dataLines is not specified, define defaults
