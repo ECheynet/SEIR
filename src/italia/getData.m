@@ -1,4 +1,4 @@
-function tableCOVIDItaly = getDataCOVID_ITA(fileURL, dataLines)
+function tableCOVIDItaly = getData(fileURL, dataLines)
 % The function tableCOVIDItaly = getDataCOVID
 % collects the updated data of the COVID-19 pandemic in Italy from the
 % Italian governement [1]
