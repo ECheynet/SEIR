@@ -1,4 +1,4 @@
-function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,varargout] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
+function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
 % [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,varargout] = 
 % fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin) estimates the 
 % parameters used in the SEIQRDP function, used to model the time-evolution
@@ -28,6 +28,8 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,varargout] = fit_SEIQRDP(Q,R
 %   delta: scalar [1x1]: fitted  inverse of the average quarantine time
 %   lambda: scalar [1x1]: fitted  cure rate
 %   kappa: scalar [1x1]: fitted  mortality rate
+%   lambdaFun: anonymous function giving the time evolution of the recovery
+%  rate
 %   optional:
 %       - residual
 %       - Jcobian
@@ -42,8 +44,8 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,varargout] = fit_SEIQRDP(Q,R
 %% Inputparseer
 p = inputParser();
 p.CaseSensitive = false;
-p.addOptional('tolX',1e-4);  %  option for optimset
-p.addOptional('tolFun',1e-4);  %  option for optimset
+p.addOptional('tolX',1e-5);  %  option for optimset
+p.addOptional('tolFun',1e-5);  %  option for optimset
 p.addOptional('Display','iter'); % Display option for optimset
 p.addOptional('dt',0.1); % time step for the fitting
 p.parse(varargin{:});
@@ -55,7 +57,7 @@ dt  = p.Results.dt ;
 
 %% Options for lsqcurvfit
 
-options=optimset('TolX',tolX,'TolFun',tolFun,'MaxFunEvals',800,'Display',Display);
+options=optimset('TolX',tolX,'TolFun',tolFun,'MaxFunEvals',1200,'Display',Display);
 %% Fitting the data
 
 
@@ -82,13 +84,36 @@ tTarget = round(datenum(time-time(1))*fs)/fs; % Number of days with one decimal
 
 t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm converges
 
+%% Decide which function to use for lambda and get first estimate of lambda
+%  Preliminary fitting for lambda to find the best approximation
+%  The final fitting is done considering simulatneously the different
+%  parameters
 
+if ~isempty(R) 
+    [guess,lambdaFun] = getLambdaFun(tTarget,Q,R,guess);
+    [guess,kappaFun] = getKappaFun(tTarget,Q,D,guess);
+else
+    lambdaFun =  @(a,t) a(1) + a(2).*exp(-a(3).*t); % default function
+    kappaFun = @(a,t) a(1).*exp(-a(2).*t);
+%     lambdaFun = @(a,t) a(1)./(a(2)+exp(-a(3).*t));
+end
+
+
+%%
 
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
 
+lambdaMax = [2 2 2];
+kappaMax = [2 2];
 % call Lsqcurvefit
 [Coeff,~,residual,~,~,~,jacobian] = lsqcurvefit(@(para,t) modelFun1(para,t),...
-    guess,tTarget(:)',input,zeros(1,numel(guess)),[1 3 1 1 2 3 2 2],options);
+    guess,tTarget(:)',input,[0 0 0 0 0 0.02 0 0 0],[1 3 1 1 lambdaMax kappaMax],options);
+
+
+
+    
+    
+
 
 
 if nargout ==7
@@ -111,8 +136,8 @@ alpha1 = abs(Coeff(1));
 beta1 = abs(Coeff(2));
 gamma1 = abs(Coeff(3));
 delta1 = abs(Coeff(4));
-Lambda1 = abs(Coeff(5:6));
-Kappa1 = abs(Coeff(7:8));
+Lambda1 = abs(Coeff(5:7));
+Kappa1 = abs(Coeff(8:9));
 
 % if isempty(R)
 %     Lambda1(2)=0;
@@ -135,8 +160,8 @@ Kappa1 = abs(Coeff(7:8));
         beta = abs(para(2));
         gamma = abs(para(3));
         delta = abs(para(4));
-        lambda0 = abs(para(5:6));
-        kappa0 = abs(para(7:8));
+        lambda0 = abs(para(5:7));
+        kappa0 = abs(para(8:9));
 
         
         %% Initial conditions
@@ -159,15 +184,13 @@ Kappa1 = abs(Coeff(7:8));
         %%
         modelFun = @(Y,A,F) A*Y + F;
         
+        
+        
+        lambda = lambdaFun(lambda0,t);
+        kappa = kappaFun(kappa0,t); 
          
-         
-%          if ~isempty(R)
-                  lambda = lambda0(1)*(1-exp(-lambda0(2).*t)); % I use these functions for illustrative purpose only
-                  kappa = kappa0(1)*exp(-kappa0(2).*t); 
-%          else
-%              lambda = lambda0(1).*ones(1,N); % I use these functions for illustrative purpose only
-%              kappa = kappa0(1)*exp(-kappa0(2).*t); 
-%          end
+        if lambda>10, warning('lambda is abnormally high'); end
+%
                   
         % ODE reYution
         for ii=1:N-1
@@ -178,7 +201,6 @@ Kappa1 = abs(Coeff(7:8));
             Y(:,ii+1) = RK4(modelFun,Y(:,ii),A,F,dt);
         end
         
-%         I1 = Y(3,1:N);
         Q1 = Y(4,1:N);
         R1 = Y(5,1:N);
         D1 = Y(6,1:N);
@@ -186,7 +208,7 @@ Kappa1 = abs(Coeff(7:8));
         Q1 = interp1(t,Q1,t0);
         R1 = interp1(t,R1,t0);
         D1 = interp1(t,D1,t0);
-        if ~isempty(R),
+        if ~isempty(R)
             output = [Q1;R1;D1];
         else
             output = [Q1+R1;D1];
@@ -222,6 +244,74 @@ Kappa1 = abs(Coeff(7:8));
         % output
         Y = Y + (1/6)*(k_1+2*k_2+2*k_3+k_4)*dt;
     end
+
+    function [guess,kappaFun] = getKappaFun(tTarget,Q,D,guess)
+        
+        if max(D)<20
+            kappaFun = @(a,t) a(1).*exp(-a(2).*t);
+        else
+            opt=optimset('TolX',1e-6,'TolFun',1e-6,'Display','off');
+            
+            kappaFun = @(a,t) a(1).*exp(-a(2).*t);
+            
+            rate = (diff(D)./median(diff(tTarget(:))))./Q(2:end);
+            x = tTarget(2:end);
+            rate(abs(rate)>3)=nan;
+            
+            
+            [kappaGuess] = lsqcurvefit(@(para,t) kappaFun(para,t),...
+                guess(8:9),x(~isnan(rate)),rate(~isnan(rate)),[0 0],[2 2],opt);
+            
+            
+            
+            kappaGuess(kappaGuess<0.01)=0.1;
+            kappaGuess(kappaGuess>1.9)=0.5;
+            
+
+            guess(8:9) = kappaGuess;
+        end
+    end
+
+    function [guess,lambdaFun] = getLambdaFun(tTarget,Q,R,guess)
+        
+        
+        if max(R)<20
+            lambdaFun = @(a,t) a(1) + a(2).*exp(-a(3).*t);
+            
+        else
+            
+            opt=optimset('TolX',1e-6,'TolFun',1e-6,'Display','off');
+            
+            myFun1 = @(a,t) a(1)./(a(2)+exp(-a(3).*t));
+            myFun2 = @(a,t) a(1) + a(2).*exp(-a(3).*t);
+            rate = diff(R)./median(diff(tTarget(:)))./Q(2:end);
+            x = tTarget(2:end);
+            rate(abs(rate)>3|abs(rate)==0)=nan;
+            % Approximation by polynome
+            
+            
+            
+            [lambdaGuess1,r1] = lsqcurvefit(@(para,t) myFun1(para,t),...
+                guess(5:7),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[2 2 2],opt);
+            
+            [lambdaGuess2,r2] = lsqcurvefit(@(para,t) myFun2(para,t),...
+                guess(5:7),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[2 2 2],opt);
+            
+            if r1<r2
+                lambdaGuess = lambdaGuess1;
+                lambdaFun = myFun1;
+            else
+                lambdaGuess = lambdaGuess2;
+                lambdaFun = myFun2;
+            end
+            
+            lambdaGuess(lambdaGuess<0.01)=0.3;
+            lambdaGuess(lambdaGuess>1.9)=0.6;
+            
+            guess(5:7) = lambdaGuess;
+        end
+    end
+
 
 end
 
