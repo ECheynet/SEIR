@@ -19,6 +19,8 @@ tableCOVIDItaly_Tot.Properties.VariableNames=[tableCOVIDItaly.Properties.Variabl
 
 Recovered = tableCOVIDItaly_Tot.recovered';
 Deaths = tableCOVIDItaly_Tot.dead';
+% Hospitalized = tableCOVIDItaly_Tot.hospitalized';
+% Quarantined = tableCOVIDItaly_Tot.quarantined';
 TotPositive = tableCOVIDItaly_Tot.totPositive'; % = #quarantined + #hospitalized
 TotCases = tableCOVIDItaly_Tot.totCases'; % = #totPositive + #recovered + #dead
 
@@ -28,27 +30,27 @@ time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss
 
 % To simulate the cases after fitting
 dt = 1/24; % time step (each hour)
-daysToPredict = 30;
+daysToPredict = 14;
 time1 = datetime(time(1)) : dt : datetime(datestr(floor(now) + datenum(daysToPredict)));
 N = numel(time1);
 t = [0:N - 1].*dt;
 
 %% fit
 % initial conditions
-E0 = 0; % Initial number of exposed cases. Unknown but unlikely to be zero.
-Ia0 = 0.1 * TotPositive(1); % Initial number of infectious cases. Unknown but unlikely to be zero.
+E0 = 1e-3 * Npop; % exposed
+Ia0 = 1e-2 * Npop; % asymptomatic
 Iq0 = TotPositive(1);
 R0 = Recovered(1);
 D0 = Deaths(1);
 
 % initial guess
-beta_guess = 4; % Infection rate
-gamma_guess = 1 / 4; % (latent time in days) rate at which exposed go asymptomatic
-delta_guess = 1; % rate at which exposed go confirmed (and quarantined)
-lambda_guess = [0.5, 0.05]; % recovery rate (when being asymptomatic)
-kappa_guess = [0.1, 0.01]; % death rate (when being asymptomatic)
-tau_guess = [0.01, 0.02]; % recovery rate (when being confirmed)
-rho_guess = [0.02, 0.02]; % death rate (when being confirmed)
+beta_guess = 0; % Infection rate
+gamma_guess = 1 / 17; % (latent time in days) rate at which exposed can carry the virus
+delta_guess = 0; % rate at which exposed go confirmed (and quarantined)
+lambda_guess = zeros(1, 2); % recovery rate (when being asymptomatic)
+kappa_guess = zeros(1, 2); % death rate (when being asymptomatic)
+tau_guess = zeros(1, 2); % recovery rate (when being confirmed)
+rho_guess = zeros(1, 2); % death rate (when being confirmed)
 guess = [beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess, rho_guess];
 
 % do the fit
@@ -70,17 +72,17 @@ x = D;  % dead
 %% plot
 figure
 
-semilogy(time1, Iq + R + D, 'c', time1, Iq, 'r', time1, R, 'b', time1, D, 'k');  % simulation
+semilogy(time1, E, 'v', time1, Ia, 'blue', time1, Iq + R + D, 'cyan', time1, Iq, 'red', time1, R, 'green', time1, D, 'black');  % simulation
 hold on
 
 set(gca,'ColorOrderIndex',1);
-semilogy(time, TotCases, 'co', time, TotPositive, 'ro', time, Recovered, 'bo', time, Deaths, 'ko');  % real data
+semilogy(time, TotCases, 'co', time, TotPositive, 'ro', time, Recovered, 'go', time, Deaths, 'ko');  % real data
 
 % labels
-ylabel('# cases')
+ylabel('#')
 xlabel('time (days)')
 title('Italy');
-leg = {'total = # positives + # recovered + # dead', '# positives = # quarantined + # hospitalized', '# recovered', '# dead'};
+leg = {'exposed', 'asymptomatic', 'total = positives + recovered + dead', 'positives = quarantined + hospitalized', 'recovered', 'dead'};
 legend(leg{:}, 'location', 'southoutside')
 set(gcf, 'color', 'w')
 

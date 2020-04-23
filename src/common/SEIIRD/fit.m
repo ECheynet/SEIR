@@ -28,7 +28,13 @@ t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm conver
 
 % call Lsqcurvefit
 lowerBounds = zeros(1, numel(guess));
-upperBounds = 10 * ones(1, numel(guess));
+upperBounds = ones(1, numel(guess));
+
+lowerBounds(2) = 1 / 30;  % gamma = rate at which E -> I_asym => ~ 1 / latentPeriod
+upperBounds(2) = 1 / 5;
+
+% [1 3 1 1 2 3 2 2]
+
 [Coeff,~,~,~,~,~,~] = lsqcurvefit(@(para,t) SEIIRD_for_fitting(para, t), guess, tTarget(:)', [TotPositive; Recovered; Deaths], lowerBounds, upperBounds, options);
 
 %% Write the fitted coeff in the outputs

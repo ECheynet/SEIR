@@ -6,7 +6,7 @@ N = numel(t);  % # time steps
 Y = zeros(6, N);  % 6 states (S, E, Ia, Iq, R, D)
 Y(1,1) = Npop - E0 - Ia0 - Iq0 - R0 - D0;  % susceptible
 Y(2,1) = E0;  % exposed
-Y(3,1) = Ia0;  % infectious
+Y(3,1) = Ia0;  % infectious asymptomatic
 Y(4,1) = Iq0;  % quarantined (confirmed) = quarantined + hospitalized
 Y(5,1) = R0;  % recovered
 Y(6,1) = D0;  % dead

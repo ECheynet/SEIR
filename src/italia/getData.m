@@ -33,11 +33,12 @@ opts.PreserveVariableNames = true;
 % opts = setvaropts(opts, "Date", "InputFormat", "yyyy-MM-dd HH:mm:ss"); % Use "Format","yyyy-MM-dd'T'HH:mm:ss" from Mar 23, 2020 on
 
 % Download the CSV file
-websave('dummy.csv', fileURL);
+% uncommen to to update data
+% websave('data.csv', fileURL);
 
 % Import the data
-fid = fopen('dummy.csv');
-tableCOVIDItaly = readtable('dummy.csv', opts);
+fid = fopen('data.csv');
+tableCOVIDItaly = readtable('data.csv', opts);
 fclose(fid);
-delete('dummy.csv')
+% delete('dummy.csv')
 end
