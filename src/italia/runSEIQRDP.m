@@ -24,13 +24,6 @@ Deaths = tableCOVIDItaly_Tot.dead';
 Confirmed = tableCOVIDItaly_Tot.totPositive';
 time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss'))));
 
-% if the number of confirmed Confirmed cases is small, it is difficult to know whether the quarantine has been rigorously applied or not. In addition, this suggests that the number of infectious is much larger than the number of confirmed cases
-minNum = round(0.1*max(Confirmed));
-Recovered(Confirmed<=minNum) = [];
-Deaths(Confirmed<=minNum) = [];
-time(Confirmed<=minNum) = [];
-Confirmed(Confirmed<=minNum) = [];
-
 % To simulate the cases after fitting
 dt = 1/24; % time step (each hour)
 time1 = datetime(time(1)):dt:datetime(datestr(floor(now)+datenum(100)));
@@ -73,7 +66,7 @@ x = D;
 %% plot
 figure
 
-semilogy(time1,E,'c',time1,Q,'r',time1,R,'b',time1,D,'k');  % model
+semilogy(time1,P/1e2,'c',time1,Q,'r',time1,R,'b',time1,D,'k');  % model
 hold on
 
 set(gca,'ColorOrderIndex',1);
@@ -83,7 +76,7 @@ semilogy(time,Confirmed,'ro',time,Recovered,'bo',time,Deaths,'ko');  % real data
 ylabel('Number of cases')
 xlabel('time (days)')
 title('Italy');
-leg = {'Exposed','Confirmed','Recovered','Dead'};
+leg = {'','Confirmed','Recovered','Dead'};
 legend(leg{:},'location','southoutside')
 set(gcf,'color','w')
 
