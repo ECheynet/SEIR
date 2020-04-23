@@ -1,4 +1,4 @@
-function [S, E, Ia, Iq, R, D, P] = model(alpha, beta, gamma, delta, lambda0, kappa0, tau0, rho0, Npop, E0, Ia0, Iq0, R0, D0, t)
+function [S, E, Ia, Iq, R, D, P] = model(alpha, beta, gamma, delta, lambda0, kappa0, Npop, E0, Ia0, Iq0, R0, D0, t)
 % Simulate the time-histories of an epidemic outbreak using generalized SEIIRD model
 
 %% Initial conditions
@@ -13,7 +13,7 @@ Y(6,1) = D0;  % dead
 Y(7,1) = 0;  % not susceptible
 
 %% Matrix version of gSEIR model
-[Y] = simulate(alpha, beta, gamma, delta, lambda0, kappa0, tau0, rho0, Y, Npop, t);
+[Y] = simulate(alpha, beta, gamma, delta, lambda0, kappa0, Y, Npop, t);
 
 S = Y(1, 1:N);
 E = Y(2, 1:N);

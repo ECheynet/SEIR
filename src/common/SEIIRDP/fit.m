@@ -1,4 +1,4 @@
-function [alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, tau_fit, rho_fit] = fit(TotPositive, Recovered, Deaths, Npop, E0, Ia0, time, guess, varargin)
+function [alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit] = fit(TotPositive, Recovered, Deaths, Npop, E0, Ia0, time, guess, varargin)
 % Estimates the parameters used in the SEIQRDP function, used to model the time-evolution of an epidemic outbreak.
 
 %% Inputparseer
@@ -28,10 +28,7 @@ t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm conver
 
 % call Lsqcurvefit
 lowerBounds = zeros(1, numel(guess));
-upperBounds = 3 * ones(1, numel(guess));
-upperBounds(7) = 0;  % kappa (Ia -> D)
-upperBounds(8) = 0;
-
+upperBounds = 5 * ones(1, numel(guess));
 [Coeff,~,~,~,~,~,~] = lsqcurvefit(@(para,t) to_fit(para, t), guess, tTarget(:)', [TotPositive; Recovered; Deaths], lowerBounds, upperBounds, options);
 
 %% Write the fitted coeff in the outputs
@@ -41,8 +38,6 @@ gamma_fit = abs(Coeff(3));
 delta_fit = abs(Coeff(4));
 lambda_fit = abs(Coeff(5:6));
 kappa_fit = abs(Coeff(7:8));
-tau_fit = abs(Coeff(8:9));
-rho_fit = abs(Coeff(9:10));
 
 %% nested functions
     function [output] = to_fit(para, t0)
@@ -52,8 +47,6 @@ rho_fit = abs(Coeff(9:10));
         delta = abs(para(4));
         lambda0 = abs(para(5:6));
         kappa0 = abs(para(7:8));
-        tau0 = abs(para(8:9));
-        rho0 = abs(para(9:10));
         
         %% Initial conditions
         N = numel(t);
@@ -68,7 +61,7 @@ rho_fit = abs(Coeff(9:10));
         Y(7,1) = 0;
         
         %% ODE solution
-        [Y] = simulate(alpha, beta, gamma, delta, lambda0, kappa0, tau0, rho0, Y, Npop, t);
+        [Y] = simulate(alpha, beta, gamma, delta, lambda0, kappa0, Y, Npop, t);
         
         Q1 = Y(4,1:N);
         R1 = Y(5,1:N);

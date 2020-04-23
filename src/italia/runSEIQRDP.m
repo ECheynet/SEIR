@@ -39,10 +39,10 @@ R0 = Recovered (1);
 D0 = Deaths (1);
 
 % initial guess
-alpha_guess = 0.3; % protection rate
-beta_guess = 3.0; % Infection rate
-LT_guess = 22; % latent time in days
-Q_guess = 0.24; % rate at which infectious people enter in quarantine
+alpha_guess = 0; % protection rate
+beta_guess = 0; % Infection rate
+LT_guess = 17; % latent time in days
+Q_guess = 0; % rate at which infectious people enter in quarantine
 lambda_guess = [0.02, 3.0]; % recovery rate
 kappa_guess = [0.02, 0.05]; % death rate
 guess = [alpha_guess, beta_guess, 1/LT_guess, Q_guess, lambda_guess, kappa_guess];
