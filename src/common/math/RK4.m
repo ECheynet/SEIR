@@ -1,4 +1,4 @@
-function [Y] = RK(iteration,Y,A,F,dt)
+function [Y] = RK4(iteration,Y,A,F,dt)
     % Runge-Kutta of order 4
     k_1 = iteration(Y,A,F);
     k_2 = iteration(Y+0.5*dt*k_1,A,F);

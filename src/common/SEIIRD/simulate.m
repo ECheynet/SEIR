@@ -13,7 +13,7 @@ function [Y] = simulate(beta, gamma, delta, lambda0, kappa0, tau0, rho0, Y, Npop
         SI = Y(1, i) * Y(3, i);  % S * Ia
         F = zeros(6, 1);  % vector just for SI
         F(1:2, 1) = [-beta / Npop; beta / Npop].*SI;
-        Y(:, i + 1) = RK(iteration, Y(:, i), A, F, dt);
+        Y(:, i + 1) = RK4(iteration, Y(:, i), A, F, dt);
     end
 end
 

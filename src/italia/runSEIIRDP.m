@@ -1,6 +1,7 @@
 clearvars; close all; clc;
 addpath('../common/SEIIRDP/');
 addpath('../common/stats/');
+addpath('../common/math/');
 
 %% get data
 tableCOVIDItaly = getData();
@@ -45,18 +46,19 @@ D0 = Deaths(1);
 
 % initial guess
 alpha_guess = 0; % protection rate
-beta_guess = 0; % Infection rate
-gamma_guess = 0; % (latent time in days) rate at which exposed can carry the virus
-delta_guess = 0; % rate at which exposed go confirmed (and quarantined)
-lambda_guess = [0.01, 10.0]; % recovery rate (when being asymptomatic)
-kappa_guess = [1, 0.05]; % death rate (when being asymptomatic)
-guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess];
+beta_guess = 0; % S -> E (by coming in contact with asymp)
+gamma_guess = 0; % (inverse of latent time in days) rate at which exposed can carry the virus
+delta_guess = 0; % asymp -> test positive
+lambda_guess = [0.01, 10.0]; % recovery rate (when being symptomatic)
+kappa_guess = [1, 0.05]; % death rate (when being symptomatic)
+tau_guess = 0;  % asym -> recover
+guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess];
 
 % do the fit
-[alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit] = fit(TotPositive, Recovered, Deaths, Npop, E0, Ia0, time, guess, 'Display', 'off');
+[alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, tau_fit] = fit(TotPositive, Recovered, Deaths, Npop, E0, Ia0, time, guess, 'Display', 'off');
 
 %% apply model with fitted parameters
-[S, E, Ia, Iq, R, D, P] = model(alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, Npop, E0, Ia0, Iq0, R0, D0, t);
+[S, E, Ia, Iq, R, D, P] = model(alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, tau_fit, Npop, E0, Ia0, Iq0, R0, D0, t);
 
 % errors
 x = Iq; % simulated number of total positive

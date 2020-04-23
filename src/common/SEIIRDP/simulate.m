@@ -1,4 +1,4 @@
-function [Y] = simulate(alpha, beta, gamma, delta, lambda0, kappa0, Y, Npop, t)
+function [Y] = simulate(alpha, beta, gamma, delta, lambda0, kappa0, tau, Y, Npop, t)
     N = numel(t);
     dt = median(diff(t));
     iteration = @(Y,A,F) A*Y + F;
@@ -7,11 +7,12 @@ function [Y] = simulate(alpha, beta, gamma, delta, lambda0, kappa0, Y, Npop, t)
     kappa = kappa0(1) * exp(-kappa0(2).*t);
         
     for i=1:N-1
-        A = getModelMatrix(alpha, gamma, delta, lambda(i), kappa(i));
+        interactions = [alpha, gamma, delta, lambda(i), kappa(i), tau];  % pack coefficients
+        A = getModelMatrix(interactions);
         SI = Y(1, i) * Y(3, i);  % S * Ia
         F = zeros(7, 1);  % vector just for SI
         F(1:2, 1) = [-beta / Npop; beta / Npop].*SI;
-        Y(:, i + 1) = RK(iteration, Y(:, i), A, F, dt);
+        Y(:, i + 1) = RK4(iteration, Y(:, i), A, F, dt);
     end
 end
 
