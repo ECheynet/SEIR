@@ -26,7 +26,7 @@ time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss
 
 % To simulate the cases after fitting
 dt = 1/24; % time step (each hour)
-time1 = datetime(time(1)):dt:datetime(datestr(floor(now)+datenum(100)));
+time1 = datetime(time(1)):dt:datetime(datestr(floor(now)+datenum(300)));
 N = numel(time1);
 t = [0:N-1].*dt;
 
@@ -66,7 +66,7 @@ x = D;
 %% plot
 figure
 
-semilogy(time1,P/1e2,'c',time1,Q,'r',time1,R,'b',time1,D,'k');  % model
+semilogy(time1,S/1e1,'c',time1,E/1e1,'r',time1,I/1e1,'b',time1,R/1e1,'k');  % model
 hold on
 
 set(gca,'ColorOrderIndex',1);

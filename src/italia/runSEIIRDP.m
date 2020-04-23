@@ -31,14 +31,14 @@ time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss
 
 % To simulate the cases after fitting
 dt = 1/24; % time step (each hour)
-daysToPredict = 14;
+daysToPredict = 300;
 time1 = datetime(time(1)) : dt : datetime(datestr(floor(now) + datenum(daysToPredict)));
 N = numel(time1);
 t = [0:N - 1].*dt;
 
 %% fit
 % initial conditions
-E0 = 1e-3 * Npop; % exposed
+E0 = 1e-4 * Npop; % exposed
 Ia0 = 1e-2 * Npop; % asymptomatic
 Iq0 = TotPositive(1);
 R0 = Recovered(1);
@@ -47,11 +47,11 @@ D0 = Deaths(1);
 % initial guess
 alpha_guess = 0; % protection rate
 beta_guess = 0; % S -> E (by coming in contact with asymp)
-gamma_guess = 0; % (inverse of latent time in days) rate at which exposed can carry the virus
+gamma_guess = 1/17; % (inverse of latent time in days) rate at which exposed can carry the virus
 delta_guess = 0; % asymp -> test positive
-lambda_guess = [0.01, 10.0]; % recovery rate (when being symptomatic)
-kappa_guess = [1, 0.05]; % death rate (when being symptomatic)
-tau_guess = 0;  % asym -> recover
+lambda_guess = [0.02, 1]; % recovery rate (when being symptomatic)
+kappa_guess = [2, 0.01]; % death rate (when being symptomatic)
+tau_guess = [0.02, 1];  % asym -> recover
 guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess];
 
 % do the fit
@@ -73,14 +73,16 @@ x = D;  % dead
 %% plot
 figure
 plotter = @plot;
+logCoeff = 1e-2;
 
 plotter(time1, Iq + R + D); hold on % simulation
 plotter(time1, Iq); hold on
 plotter(time1, R); hold on
 plotter(time1, D); hold on
-plotter(time1, E * 1e-1); hold on
-plotter(time1, S * 1e-2); hold on
-plotter(time1, P * 1e-2); hold on
+plotter(time1, E); hold on
+plotter(time1, S * logCoeff); hold on
+plotter(time1, P * logCoeff); hold on
+plotter(time1, Ia); hold on
 
 set(gca,'ColorOrderIndex',1);
 plotter(time, TotCases, 'o'); hold on % real data
@@ -92,8 +94,8 @@ plotter(time, Deaths, 'o');
 ylabel('#')
 xlabel('time (days)')
 title('Italy');
-leg = {'total = positives + recovered + dead', 'positives = quarantined + hospitalized', 'recovered', 'dead', 'exposed * 1e-1', 'susceptible * 1e-2', 'not susceptible * 1e-2'};
-legend(leg{:}, 'location', 'southoutside')
+leg = {'total cases = positives + recovered + dead', 'total positives = quarantined + hospitalized', 'total recovered', 'total dead', 'exposed', 'susceptible (scaled)', 'not susceptible (scaled)', 'asymptomatic'};
+legend(leg{:})
 set(gcf, 'color', 'w')
 
 % prettify
