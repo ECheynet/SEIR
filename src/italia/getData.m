@@ -20,21 +20,20 @@ opts.DataLines = dataLines;
 opts.Delimiter = ",";
 
 % Specify column names and types
-
-%  opts.VariableNames = ["HospitalizedWithSymptoms", "HospitalizedInIntensiveCare", "Hospitalized",  	"HomeConfinement", 	"confirmed" ,	"activeCases", 	"newCases", "Recovered", 	"Deaths" ,	"totalCases"]
-opts.VariableNames = ["Date"    , "CountryCode", "RegionCode", "RegionName", "Lat"   , "Long"  , "HospitalizedWithSymptoms", "HospitalizedInIntensiveCare", "Hospitalized", "HomeConfinement", "Quarantined", "variationQuarantined", "NewQuarantined","Recovered", "Deaths", "Confirmed" , "Swabs" ];
-opts.VariableTypes = ["string", "string"     , "uint8"     , "string"    , "double", "double", "double"                  , "double"                     , "double"      , "double"         , "double"     , "double"        , "double"        , "double"   , "double", "double"    , "double"];
+opts.VariableNames = ["Date", "_", "_", "_", "_", "_", "hospitalizedSymptomatic", "ICU", "hospitalized", "quarantined", "totPositive", "_", "_", "recovered", "dead", "totCases", "test"];
+opts.VariableTypes = ["string", "string" , "uint8" , "string" , "double", "double", "double" , "double" , "double" , "double" , "double" , "double" , "double" , "double" , "double", "double" , "double"];
 
 % Specify file level properties
 opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
+opts.PreserveVariableNames = true;
 
 % Specify variable properties
 % Can create an error with older Matlab versions
 % opts = setvaropts(opts, "Date", "InputFormat", "yyyy-MM-dd HH:mm:ss"); % Use "Format","yyyy-MM-dd'T'HH:mm:ss" from Mar 23, 2020 on
 
 % Download the CSV file
-websave('dummy.csv',fileURL);
+websave('dummy.csv', fileURL);
 
 % Import the data
 fid = fopen('dummy.csv');

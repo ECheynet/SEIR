@@ -19,10 +19,10 @@ tableCOVIDItaly_Tot.Properties.VariableNames=[tableCOVIDItaly.Properties.Variabl
 
 %% setup model
 Npop = 60.48e6; % population
-Recovered = tableCOVIDItaly_Tot.Recovered';
-Deaths = tableCOVIDItaly_Tot.Deaths';
-Confirmed = tableCOVIDItaly_Tot.Confirmed';
-Quarantined = tableCOVIDItaly_Tot.Quarantined';
+Recovered = tableCOVIDItaly_Tot.recovered';
+Deaths = tableCOVIDItaly_Tot.dead';
+Confirmed = tableCOVIDItaly_Tot.totPositive';
+Quarantined = tableCOVIDItaly_Tot.quarantined';
 time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss'))));
 
 % if the number of confirmed Confirmed cases is small, it is difficult to know whether the quarantine has been rigorously applied or not. In addition, this suggests that the number of infectious is much larger than the number of confirmed cases
