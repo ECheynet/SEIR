@@ -42,11 +42,15 @@ Any question, comment or suggestion is welcome.
 
 
 
-## Example (case of COVID-19 in Italy) 
+## Example 1 (case of COVID-19 in Italy) 
 
 The fitting of the extended SEIR model to real data provides the following results:
 
-![Active, recoverd and dceased cases in italy](Italy.png)
+![Active, recoverd and deceased cases in italy](Italy.png)
 
 
+## Example 2 (case of COVID-19 in Hubei) 
 
+The fitting of the extended SEIR model to real data provides the following results:
+
+![Active, recoverd and deceased cases in Hubei](Hubei.png)
