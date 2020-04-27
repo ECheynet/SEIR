@@ -1,5 +1,5 @@
 function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
-% [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,varargout] =
+% [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] =
 % fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin) estimates the
 % parameters used in the SEIQRDP function, used to model the time-evolution
 % of an epidemic outbreak.
@@ -25,21 +25,19 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] = fit_S
 %   alpha: scalar [1x1]: fitted protection rate
 %   beta: scalar [1x1]: fitted  infection rate
 %   gamma: scalar [1x1]: fitted  Inverse of the average latent time
-%   delta: scalar [1x1]: fitted  inverse of the average quarantine time
+%   delta: scalar [1x1]: fitted  rate at which people enter in quarantine
 %   lambda: scalar [1x1]: fitted  cure rate
 %   kappa: scalar [1x1]: fitted  mortality rate
 %   lambdaFun: anonymous function giving the time evolution of the recovery
 %  rate
 %   optional:
 %       - residual
-%       - Jcobian
+%       - Jacobian
 %       - The function @SEIQRDP_for_fitting
 %
-% Author: E. Cheynet - UiB - last modified 24-03-2020
+% Author: E. Cheynet - UiB - last modified 27-04-2020
 %
 % see also SEIQRDP.m
-
-%%
 
 %% Inputparseer
 p = inputParser();
@@ -56,13 +54,9 @@ Display  = p.Results.Display ;
 dt  = p.Results.dt ;
 
 %% Options for lsqcurvfit
-
-options=optimset('TolX',tolX,'TolFun',tolFun,'MaxFunEvals',1200,'Display',Display);
-%% Fitting the data
-
-
-
-
+options=optimset('TolX',tolX,'TolFun',tolFun,...
+    'MaxFunEvals',1200,'Display',Display);
+%% Initial conditions and basic checks
 
 % Write the target input into a matrix
 Q(Q<0)=0; % negative values are not possible
@@ -79,46 +73,47 @@ end
 if size(time,1)>size(time,2) && size(time,2)==1,    time = time';end
 if size(time,1)>1 && size(time,2)>1,  error('Time should be a vector');end
 
+%% Definition of the new, refined, time vector for the numerical solution
 fs = 1./dt;
 tTarget = round(datenum(time-time(1))*fs)/fs; % Number of days with one decimal
-
 t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm converges
 
-%% Decide which function to use for lambda and get first estimate of lambda
+%% Preliminary fitting
+% Decide which function to use for lambda and get first estimate of lambda
 %  Preliminary fitting for lambda to find the best approximation
 %  The final fitting is done considering simulatneously the different
-%  parameters
+%  parameters since the equations are coupled
 
-if ~isempty(R)
+if ~isempty(R) % If there exists information on the recovered cases
     [guess,lambdaFun] = getLambdaFun(tTarget,Q,R,guess);
     [guess,kappaFun] = getKappaFun(tTarget,Q,D,guess);
 else
-    lambdaFun =  @(a,t) a(1) + a(2).*exp(-a(3).*t); % default function
+    lambdaFun =  @(a,t) a(1)./(1+exp(-a(2)*(t-a(3)))); % default function
     kappaFun = @(a,t) a(1).*exp(-a(2).*t);
-    %     lambdaFun = @(a,t) a(1)./(a(2)+exp(-a(3).*t));
 end
 
-
-%%
+%% Main fitting
 
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
-
 lambdaMax = [1 5 100]; % lambdaMax(3) has the dimension of a time
 lambdaMin = [0 0 0]; % lambdaMax(3) has the dimension of a time
 kappaMax = [2 2];
-ub = [1, 3, 1, 1, lambdaMax, kappaMax];
-lb = [0, 0, 0, 0, lambdaMin, 0, 0];
+ub = [1, 3, 1, 1, lambdaMax, kappaMax]; % upper bound of the parameters
+lb = [0, 0, 0, 0, lambdaMin, 0, 0]; % lower bound of the parameters
 % call Lsqcurvefit
 [Coeff,~,residual,~,~,~,jacobian] = lsqcurvefit(@(para,t) modelFun1(para,t),...
     guess,tTarget(:)',input,lb,ub,options);
 
 
+%% Write the fitted coeff in the outputs
+alpha1 = abs(Coeff(1));
+beta1 = abs(Coeff(2));
+gamma1 = abs(Coeff(3));
+delta1 = abs(Coeff(4));
+Lambda1 = abs(Coeff(5:7));
+Kappa1 = abs(Coeff(8:9));
 
-
-
-
-
-
+%% optional outputs
 if nargout ==7
     varargout{1} = residual;
 elseif nargout==8
@@ -129,29 +124,8 @@ elseif nargout==9
     varargout{2} = jacobian;
     varargout{3} = modelFun1;
 elseif nargout>9
-    error('Too many output specified')
+    error('Too many outputs specified')
 end
-
-
-%% Write the fitted coeff in the outputs
-
-alpha1 = abs(Coeff(1));
-beta1 = abs(Coeff(2));
-gamma1 = abs(Coeff(3));
-delta1 = abs(Coeff(4));
-Lambda1 = abs(Coeff(5:7));
-Kappa1 = abs(Coeff(8:9));
-
-% if isempty(R)
-%     Lambda1(2)=0;
-% end
-
-
-
-
-
-
-
 
 
 
@@ -159,6 +133,7 @@ Kappa1 = abs(Coeff(8:9));
 
     function [output] = SEIQRDP_for_fitting(para,t0)
         
+        % I simply rename the inputs
         alpha = abs(para(1));
         beta = abs(para(2));
         gamma = abs(para(3));
@@ -169,11 +144,11 @@ Kappa1 = abs(Coeff(8:9));
         
         %% Initial conditions
         N = numel(t);
-        Y = zeros(7,N);
+        Y = zeros(7,N); %  There are seven different states
         Y(2,1) = E0;
         Y(3,1) = I0;
         Y(4,1) = Q(1);
-        if ~isempty(R),
+        if ~isempty(R)
             Y(5,1) = R(1);
             Y(1,1) = Npop-Q(1)-R(1)-D(1)-E0-I0;
         else
@@ -182,20 +157,19 @@ Kappa1 = abs(Coeff(8:9));
         Y(6,1) = D(1);
         
         if round(sum(Y(:,1))-Npop)~=0
-            error('the sum must be zero because the total population (including the deads) is assumed constant');
+            error(['the sum must be zero because the total population',...
+                ' (including the deads) is assumed constant']);
         end
         %%
         modelFun = @(Y,A,F) A*Y + F;
-        
-        
-        
         lambda = lambdaFun(lambda0,t);
         kappa = kappaFun(kappa0,t);
         
+        % Very large recovery rate should not occur but can lead to
+        % numerical errors.
         if lambda>10, warning('lambda is abnormally high'); end
-        %
         
-        % ODE reYution
+        % ODE resolution
         for ii=1:N-1
             A = getA(alpha,gamma,delta,lambda(ii),kappa(ii));
             SI = Y(1,ii)*Y(3,ii);
@@ -219,6 +193,18 @@ Kappa1 = abs(Coeff(8:9));
         
     end
     function [A] = getA(alpha,gamma,delta,lambda,kappa)
+        %  [A] = getA(alpha,gamma,delta,lambda,kappa) computes the matrix A
+        %  that is found in: dY/dt = A*Y + F
+        %
+        %   Inputs:
+        %   alpha: scalar [1x1]: protection rate
+        %   beta: scalar [1x1]: infection rate
+        %   gamma: scalar [1x1]: Inverse of the average latent time
+        %   delta: scalar [1x1]: rate of people entering in quarantine
+        %   lambda: scalar [1x1]: cure rate
+        %   kappa: scalar [1x1]: mortality rate
+        %   Output:
+        %   A: matrix: [7x7]
         
         A = zeros(7);
         % S
@@ -238,6 +224,8 @@ Kappa1 = abs(Coeff(8:9));
         
     end
     function [Y] = RK4(Fun,Y,A,F,dt)
+        % NUmerical trick: the parameters are assumed constant between
+        % two time steps.
         
         % Runge-Kutta of order 4
         k_1 = Fun(Y,A,F);
@@ -249,7 +237,23 @@ Kappa1 = abs(Coeff(8:9));
     end
 
     function [guess,kappaFun] = getKappaFun(tTarget,Q,D,guess)
+        % [guess,kappaFun] = getKappaFun(tTarget,Q,D,guess) provides a first
+        % estimate of the  death rate, to faciliate convergence of the main
+        % algorithm.
+        %
+        % Input:
+        %
+        % tTarget: vector [1xN]: time as double
+        % Q: vector [1xN] of the target time-histories of the quarantined cases
+        % D: vector [1xN] of the target time-histories of the dead cases
+        % guess: vector [1x9] Initial guess for kappa
+        %
+        % Output
+        % guess: vector [1x9]  Updated intial guess
+        % kappaFun: Empirical fucntion for the death rate
         
+        % If less than 20 reported deceased, the death rate won't be
+        % reliable. Therefore, no preliminary fitting is done.
         if max(D)<20
             kappaFun = @(a,t) a(1).*exp(-a(2).*t);
         else
@@ -261,17 +265,14 @@ Kappa1 = abs(Coeff(8:9));
                 
                 rate = (diff(D)./median(diff(tTarget(:))))./Q(2:end);
                 x = tTarget(2:end);
+                
+                % A death rate larger than 3 is abnormally high. It is not
+                % used for the fitting.                 
                 rate(abs(rate)>3)=nan;
-                
-                
                 [kappaGuess] = lsqcurvefit(@(para,t) kappaFun(para,t),...
                     guess(8:9),x(~isnan(rate)),rate(~isnan(rate)),[0 0],[2 2],opt);
                 
-%                 plot(tTarget(2:end),rate,tTarget,kappaFun(kappaGuess,tTarget))
-                
-                kappaGuess(kappaGuess<0.01)=0.1;
-                kappaGuess(kappaGuess>1.9)=0.5;
-                guess(8:9) = kappaGuess;
+                guess(8:9) = kappaGuess; % update guess
                 
             catch exceptionK
                 disp(exceptionK)
@@ -282,8 +283,26 @@ Kappa1 = abs(Coeff(8:9));
     end
 
     function [guess,lambdaFun] = getLambdaFun(tTarget,Q,R,guess)
+        %  [guess,lambdaFun] = getLambdaFun(tTarget,Q,R,guess) provides a first
+        % estimate of the  death rate, to faciliate convergence of the main
+        % algorithm.
+        %
+        % Input:
+        %
+        % tTarget: vector [1xN]: time as double
+        % Q: vector [1xN] of the target time-histories of the quarantined cases
+        % R: vector [1xN] of the target time-histories of the recovered cases
+        % guess: vector [1x9] Initial guess for kappa
+        %
+        % Output
+        % guess: vector [1x9]  Updated intial guess
+        % lambdaFun: Empirical fucntion for the recovery rate
         
+        % If less than 20 reported deceased, the death rate won't be
+        % reliable. Therefore, no preliminary fitting is done.
         
+        % If less than 20 reported recovered, the death rate won't be
+        % reliable. Therefore, no preliminary fitting is done.
         if max(R)<20
             lambdaFun =  @(a,t) a(1)./(1+exp(-a(2)*(t-a(3))));
         else
@@ -292,27 +311,29 @@ Kappa1 = abs(Coeff(8:9));
                 
                 opt=optimset('TolX',1e-6,'TolFun',1e-6,'Display','off');
                 
+                % Two empirical functions are evaluated
                 myFun1 = @(a,t) a(1)./(1+exp(-a(2)*(t-a(3))));
-                
-                
                 myFun2 = @(a,t) a(1) + exp(-a(2)*(t+a(3)));
                 
+                % Compute the recovery rate from the data (noisy data)
                 rate = diff(R)./median(diff(tTarget(:)))./Q(2:end);
                 x = tTarget(2:end);
+                
+                % A daily rate larger than one is abnormally high. It is not
+                % used for the fitting. A daily recovered rate of zero is
+                % either abnormally low or reflects an insufficient number
+                % of recovered cases. It is not used either for the fitting
                 rate(abs(rate)>1|abs(rate)==0)=nan;
-                
-                % Approximation by polynome
-                
-                
                 
                 [coeff1,r1] = lsqcurvefit(@(para,t) myFun1(para,t),...
                     [0.2,0.1,1],x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 2 100],opt);
-
                 [coeff2,r2] = lsqcurvefit(@(para,t) myFun2(para,t),...
                     [0.2,0.1,min(x(~isnan(rate)))],x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 2 100],opt);
-
+                
                 
                 % myFun1 is more stable on a long term persepective
+%               % If coeff2 have reached the upper boundaries, myFUn1 is
+%               chosen
                 if r1<r2 || coeff2(1)>0.99 || coeff2(2)>4.9
                     lambdaGuess = coeff1;
                     lambdaFun = myFun1;
@@ -320,14 +341,8 @@ Kappa1 = abs(Coeff(8:9));
                     lambdaGuess = coeff2;
                     lambdaFun = myFun2;
                 end
-                    
+                guess(5:7) = lambdaGuess; % update guess
                 
-                guess(5:7) = lambdaGuess;    
-                
-%                 plot(tTarget(2:end),rate,...
-%                     tTarget,myFun1(coeff1,tTarget),'r',...
-%                     tTarget,myFun2(coeff2,tTarget),'b',...
-%                     0:1:100,lambdaFun(lambdaGuess,0:1:100),'k--')     
                 
             catch exceptionL
                 disp(exceptionL)

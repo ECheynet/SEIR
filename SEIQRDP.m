@@ -1,5 +1,5 @@
 function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0,I0,Q0,R0,D0,t,lambdaFun)
-% [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda,kappa,Npop,E0,I0,R0,D0,t)
+% [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda,kappa,Npop,E0,I0,R0,D0,t,lambdaFun)
 % simulate the time-histories of an epidemic outbreak using a generalized
 % SEIR model.
 %
@@ -8,7 +8,7 @@ function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0
 %   alpha: scalar [1x1]: fitted protection rate
 %   beta: scalar [1x1]: fitted  infection rate
 %   gamma: scalar [1x1]: fitted  Inverse of the average latent time
-%   delta: scalar [1x1]: fitted  inverse of the average quarantine time
+%   delta: scalar [1x1]: fitted  rate at which people enter in quarantine
 %   lambda: scalar [1x1]: fitted  cure rate
 %   kappa: scalar [1x1]: fitted  mortality rate
 %   Npop: scalar: Total population of the sample
@@ -20,7 +20,7 @@ function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0
 %   t: vector [1xN] of time (double; it cannot be a datetime)
 %   lambdaFun: anonymous function giving the time evolution of the recovery
 %  rate
-
+% 
 % Output
 %   S: vector [1xN] of the target time-histories of the susceptible cases
 %   E: vector [1xN] of the target time-histories of the exposed cases
@@ -30,7 +30,7 @@ function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0
 %   D: vector [1xN] of the target time-histories of the dead cases
 %   P: vector [1xN] of the target time-histories of the insusceptible cases
 %
-% Author: E. Cheynet - UiB - last modified 16-03-2020
+% Author: E. Cheynet - UiB - last modified 27-04-2020
 %
 % see also fit_SEIQRDP.m
 
@@ -45,19 +45,17 @@ Y(5,1) = R0;
 Y(6,1) = D0;
 
 if round(sum(Y(:,1))-Npop)~=0
-    error('the sum must be zero because the total population (including the deads) is assumed constant');
+    error(['the sum must be zero because the total population',...
+        ' (including the deads) is assumed constant']);
 end
-%%
+%% Computes the seven states
 modelFun = @(Y,A,F) A*Y + F;
 dt = median(diff(t));
-% ODE resolution
-
-% lambda = lambda0(1)./(1 + exp(-lambda0(2).*t - lambda0(3))); % I use these functions for illustrative purpose only
 
 lambda = lambdaFun(lambda0,t);
-% lambda = lambda0(1)./(1+lambda0(2).*exp(-lambda0(3).*t));
-kappa = kappa0(1)*exp(-kappa0(2).*t); % I use these functions for illustrative purpose only
+kappa = kappa0(1)*exp(-kappa0(2).*t);
 
+% ODE resolution
 
 for ii=1:N-1
     A = getA(alpha,gamma,delta,lambda(ii),kappa(ii));
@@ -67,7 +65,7 @@ for ii=1:N-1
     Y(:,ii+1) = RK4(modelFun,Y(:,ii),A,F,dt);
 end
 
-
+%% Write the outputs
 S = Y(1,1:N);
 E = Y(2,1:N);
 I = Y(3,1:N);
@@ -77,8 +75,20 @@ D = Y(6,1:N);
 P = Y(7,1:N);
 
 
-
+%% Nested functions
     function [A] = getA(alpha,gamma,delta,lambda,kappa)
+        %  [A] = getA(alpha,gamma,delta,lambda,kappa) computes the matrix A
+        %  that is found in: dY/dt = A*Y + F
+        %
+        %   Inputs:
+        %   alpha: scalar [1x1]: protection rate
+        %   beta: scalar [1x1]: infection rate
+        %   gamma: scalar [1x1]: Inverse of the average latent time
+        %   delta: scalar [1x1]: rate of people entering in quarantine
+        %   lambda: scalar [1x1]: cure rate
+        %   kappa: scalar [1x1]: mortality rate
+        %   Output:
+        %   A: matrix: [7x7]
         A = zeros(7);
         % S
         A(1,1) = -alpha;
@@ -104,7 +114,6 @@ P = Y(7,1:N);
         % output
         Y = Y + (1/6)*(k_1+2*k_2+2*k_3+k_4)*dt;
     end
-
 end
 
 
