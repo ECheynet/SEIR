@@ -2,6 +2,7 @@ clearvars; close all; clc;
 addpath('../common/SEIIRDP/');
 addpath('../common/stats/');
 addpath('../common/math/');
+addpath('../common/epidemology/');
 
 %% get data
 tableCOVIDItaly = getData();
@@ -84,17 +85,15 @@ p5 = plotter(time, TotCases, 'xb'); hold on % real data
 p6 = plotter(time, TotPositive, 'xr'); hold on
 p7 = plotter(time, Recovered, 'xg'); hold on
 p8 = plotter(time, Deaths, 'xk');
-ylabel('y_1')
 
 yyaxis right  % use right y-axis for large numbers
 p9 = plotter(time1, E, '-c'); hold on
 p10 = plotter(time1, S, '--k'); hold on
 p11 = plotter(time1, P, ':k'); hold on
 p12 = plotter(time1, Ia, '-.k'); hold on
-ylabel('y_2')
 
 % labels
-ylabel('#')
+ylabel('number of cases')
 xlabel('time (days)')
 title('Italy');
 leg = {'total cases = positives + recovered + dead', ...
