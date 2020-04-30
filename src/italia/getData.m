@@ -33,7 +33,7 @@ opts.PreserveVariableNames = true;
 % opts = setvaropts(opts, "Date", "InputFormat", "yyyy-MM-dd HH:mm:ss"); % Use "Format","yyyy-MM-dd'T'HH:mm:ss" from Mar 23, 2020 on
 
 % Download the CSV file
-% uncommen to to update data
+% uncomment to to update data
 % websave('data.csv', fileURL);
 
 % Import the data
