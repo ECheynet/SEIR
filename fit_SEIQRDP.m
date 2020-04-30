@@ -6,7 +6,7 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] = fit_S
 %
 % Input
 %
-%   I: vector [1xN] of the target time-histories of the infectious cases
+%   Q: vector [1xN] of the target time-histories of the quarantined cases
 %   R: vector [1xN] of the target time-histories of the recovered cases
 %   D: vector [1xN] of the target time-histories of the dead cases
 %   Npop: scalar: Total population of the sample
@@ -35,7 +35,7 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] = fit_S
 %       - Jacobian
 %       - The function @SEIQRDP_for_fitting
 %
-% Author: E. Cheynet - UiB - last modified 27-04-2020
+% Author: E. Cheynet - UiB - last modified 30-04-2020
 %
 % see also SEIQRDP.m
 
