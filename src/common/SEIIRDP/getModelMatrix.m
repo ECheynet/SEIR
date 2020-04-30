@@ -11,7 +11,7 @@ function [A] = getModelMatrix(interactions)
     A(2, 2) = -gamma;  % out of E
     A(3, 2:3) = [gamma, -delta-tau];  % asym: + gamma * E - delta
     A(4, 3:4) = [delta, -kappa-lambda];  % test positive: + delta * asym - lambda
-    A(5, 3:4) = [tau, lambda];  % recover: +tau * asym + lambda * Iq
+    A(5, 4) = lambda;  % recover: lambda * Iq
     A(6, 4) = kappa;  % dead: + kappa * Iq
-    A(7, 1) = alpha;  % not susciptable: + alpha * S
+    A(7, 1:3) = [alpha, 0, tau];  % not susciptable: + alpha * S +tau * asym
 end

@@ -15,7 +15,7 @@ Display = p.Results.Display ;
 dt = p.Results.dt ;
 
 %% Options for lsqcurvfit
-options = optimset('TolX', tolX, 'TolFun', tolFun, 'MaxFunEvals', 800, 'Display', Display);
+options = optimset('TolX', tolX, 'TolFun', tolFun, 'MaxFunEvals', 1600, 'Display', Display);
 
 %% Fitting the data
 % Write the target input into a matrix
@@ -28,10 +28,11 @@ t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm conver
 
 % call Lsqcurvefit
 lowerBounds = zeros(1, numel(guess));
-upperBounds = 5 * ones(1, numel(guess));
-lowerBounds(3) = 1/30; % 1 / latent period
-upperBounds(3) = 1/10; % 1 / latent period
-upperBounds(4) = 1;
+upperBounds = ones(1, numel(guess));
+
+lowerBounds(3) = 1/25; % 1 / latent period
+upperBounds(3) = 1/15;
+
 [Coeff,~,~,~,~,~,~] = lsqcurvefit(@(para,t) optim(para, t), guess, tTarget(:)', [TotPositive; Recovered; Deaths], lowerBounds, upperBounds, options);
 
 %% Write the fitted coeff in the outputs

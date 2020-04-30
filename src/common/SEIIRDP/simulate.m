@@ -3,14 +3,13 @@ function [Y] = simulate(alpha, beta, gamma, delta, lambda0, kappa0, tau0, Y, Npo
     dt = median(diff(t));
     iteration = @(Y,A,F) A*Y + F;
 
-    % lambda = lambda0(1) * (1 - exp(-lambda0(2).*t));  % todo
-    % kappa = kappa0(1) * exp(-kappa0(2).*t);
-    kappa = arrayfun(@(x) kappa0(1) * exp(-kappa0(2) * x), t);
-    % tau = tau0(1) * (1 - exp(-tau0(2).*t));
+    lambda = lambda0(1) * (1 - exp(-lambda0(2).*t));  % exponential growth of recovery methods
+    kappa = kappa0(1) * exp(-kappa0(2).*t);  % exponential decrease of death
+    tau = tau0(1) * (1 - exp(-tau0(2).*t));  % exponential growth of hospital beds
 
     for i=1:N-1
         % interactions = [alpha, gamma, delta, lambda(i), kappa(i), tau(i)];  % pack coefficients
-        interactions = [alpha, gamma, delta, lambda0(1), kappa(i), tau0(1)];  % pack coefficients
+        interactions = [alpha, gamma, delta, lambda(i), kappa(i), tau(i)];  % pack coefficients
         A = getModelMatrix(interactions);
         SI = Y(1, i) * Y(3, i);  % S * Ia
         D = Y(6, i);

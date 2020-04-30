@@ -31,27 +31,27 @@ time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss
 
 % To simulate the cases after fitting
 dt = 1/24; % time step (each hour)
-daysToPredict = 300;
+daysToPredict = 2 * 30;  % 1 month
 time1 = datetime(time(1)) : dt : datetime(datestr(floor(now) + datenum(daysToPredict)));
 N = numel(time1);
 t = [0:N - 1].*dt;
 
 %% fit
 % initial conditions
-E0 = 1e-4 * Npop; % exposed
-Ia0 = 1e-2 * Npop; % asymptomatic
+E0 = 1e-3 * Npop; % starting exposed = 0.1% population
+Ia0 = 1e-2 * Npop; % asymptomatic = 1% population
 Iq0 = TotPositive(1);
 R0 = Recovered(1);
 D0 = Deaths(1);
 
 % initial guess
 alpha_guess = 0; % protection rate
-beta_guess = 0; % S -> E (by coming in contact with asymp)
+beta_guess = 1; % S -> E (by coming in contact with asymp)
 gamma_guess = 1/17; % (inverse of latent time in days) rate at which exposed can carry the virus
 delta_guess = 0; % asymp -> test positive
-lambda_guess = [0.02, 1]; % recovery rate (when being symptomatic)
-kappa_guess = [2, 0.01]; % death rate (when being symptomatic)
-tau_guess = [0.02, 1];  % asym -> recover
+lambda_guess = [0.01, 1]; % recovery rate (when being symptomatic)
+kappa_guess = [1, 0.01]; % death rate (when being symptomatic)
+tau_guess = [0.01, 1];  % asym -> recover
 guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess];
 
 % do the fit
@@ -73,36 +73,49 @@ x = D;  % dead
 %% plot
 figure
 plotter = @plot;
-logCoeff = 1e-2;
 
-plotter(time1, Iq + R + D); hold on % simulation
-plotter(time1, Iq); hold on
-plotter(time1, R); hold on
-plotter(time1, D); hold on
-plotter(time1, E); hold on
-plotter(time1, S * logCoeff); hold on
-plotter(time1, P * logCoeff); hold on
-plotter(time1, Ia); hold on
+yyaxis left  % use left y-axis
+p1 = plotter(time1, Iq + R + D, '-b'); hold on % simulation
+p2 = plotter(time1, Iq, '-r'); hold on
+p3 = plotter(time1, R, '-g'); hold on
+p4 = plotter(time1, D, '-k'); hold on
 
-set(gca,'ColorOrderIndex',1);
-plotter(time, TotCases, 'o'); hold on % real data
-plotter(time, TotPositive, 'o'); hold on
-plotter(time, Recovered, 'o'); hold on
-plotter(time, Deaths, 'o');
+p5 = plotter(time, TotCases, 'xb'); hold on % real data
+p6 = plotter(time, TotPositive, 'xr'); hold on
+p7 = plotter(time, Recovered, 'xg'); hold on
+p8 = plotter(time, Deaths, 'xk');
+ylabel('y_1')
+
+yyaxis right  % use right y-axis for large numbers
+p9 = plotter(time1, E, '-c'); hold on
+p10 = plotter(time1, S, '--k'); hold on
+p11 = plotter(time1, P, ':k'); hold on
+p12 = plotter(time1, Ia, '-.k'); hold on
+ylabel('y_2')
 
 % labels
 ylabel('#')
 xlabel('time (days)')
 title('Italy');
-leg = {'total cases = positives + recovered + dead', 'total positives = quarantined + hospitalized', 'total recovered', 'total dead', 'exposed', 'susceptible (scaled)', 'not susceptible (scaled)', 'asymptomatic'};
-legend(leg{:})
+leg = {'total cases = positives + recovered + dead', ...
+    'total positives = quarantined + hospitalized', ...
+    'total recovered', ...
+    'total dead', ...
+    'real total cases', ...
+    'real total positives', ...
+    'real total recovered', ...
+    'real total dead', ...
+    'exposed', ...
+    'susceptible', ...
+    'not susceptible', ...
+    'asymptomatic'};
+legend([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12], leg{:});
 set(gcf, 'color', 'w')
 
 % prettify
 grid on
 grid minor
 axis tight
-set(gca, 'yscale', 'lin')
 
 %% results summary
 latent_period = 1 / gamma_fit
