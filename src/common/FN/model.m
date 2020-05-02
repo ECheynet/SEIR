@@ -1,4 +1,4 @@
-function [S, E, Iu, Iq, R, D, P, C] = model(alpha, beta, gamma, delta, lambda, kappa, rho, tau, Npop, E0, Iu0, Iq0, R0, D0, C0, t)
+function [S, E, Iu, Iq, R, D, P, C] = model(alpha, beta, gamma, delta, lambda, kappa, tau, rho, Npop, E0, Iu0, Iq0, R0, D0, C0, t)
 % Simulate the time-histories of an epidemic outbreak using generalized SEIIRD model
 
 %% Initial conditions

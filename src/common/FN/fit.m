@@ -36,25 +36,25 @@ upperBounds(3) = 1/15;
 [Coeff,~,~,~,~,~,~] = lsqcurvefit(@(para,t) optim(para, t), guess, tTarget(:)', [TotPositive; Recovered; Deaths; UndetectedDeaths], lowerBounds, upperBounds, options);
 
 %% Write the fitted coeff in the outputs
-alpha_fit = abs(Coeff(1));
-beta_fit = abs(Coeff(2));
-gamma_fit = abs(Coeff(3));
-delta_fit = abs(Coeff(4));
-lambda_fit = abs(Coeff(5:6));
-kappa_fit = abs(Coeff(7:8));
-tau_fit = abs(Coeff(9:10));
-rho_fit = abs(Coeff(11:12));
+alpha_fit = Coeff(1);
+beta_fit = Coeff(2);
+gamma_fit = Coeff(3);
+delta_fit = Coeff(4);
+lambda_fit = Coeff(5:6);
+kappa_fit = Coeff(7:8);
+tau_fit = Coeff(9:10);
+rho_fit = Coeff(11);
 
 %% nested functions
     function [output] = optim(para, t0)
-        alpha = abs(para(1));
-        beta = abs(para(2));
-        gamma = abs(para(3));
-        delta = abs(para(4));
-        lambda = abs(para(5:6));
-        kappa = abs(para(7:8));
-        tau = abs(para(9:10));
-        rho = abs(para(11:12));
+        alpha = para(1);
+        beta = para(2);
+        gamma = para(3);
+        delta = para(4);
+        lambda = para(5:6);
+        kappa = para(7:8);
+        tau = para(9:10);
+        rho = para(11);
         
         %% Initial conditions
         N = numel(t);

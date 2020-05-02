@@ -40,22 +40,22 @@ t = [0:N - 1].*dt;
 
 %% fit
 % initial conditions
-E0 = 1e-3 * Npop; % starting exposed = 0.1% population
-Iu0 = 0.3 * Npop; % asymptomatic = 30% population (see Vo' study: 43 %)
+E0 = 0.2 * Npop; % starting exposed
+Iu0 = 0.4 * Npop; % asymptomatic
 Iq0 = TotPositive(1);
 R0 = Recovered(1);
 D0 = Deaths(1);
 C0 = Deaths(1) * undetectedDeaths;
 
 % initial guess
-alpha_guess = 0; % protection rate
-beta_guess = 0; % S -> E (by coming in contact with asymp)
+alpha_guess = 1; % protection rate
+beta_guess = 1; % S -> E (by coming in contact with asymp)
 gamma_guess = 1/17; % (inverse of latent time in days) rate at which exposed can carry the virus
 delta_guess = 0; % asymp -> test positive
 lambda_guess = [0.01, 1]; % recovery rate (when being symptomatic)
 kappa_guess = [1, 0.01]; % death rate (when being symptomatic)
-tau_guess = [0.01, 1];  % asym -> recover
-rho_guess = [1, 0.01]; % death rate (when being asymptomatic)
+tau_guess = [0, 0];  % asym -> recover
+rho_guess = 0.2; % death rate (when being asymptomatic)
 guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess, rho_guess];
 
 % do the fit
@@ -121,4 +121,4 @@ axis tight
 
 %% results summary
 latent_period = 1 / gamma_fit
-totNRMSE = nrmseConfirmed + nrmseDeaths + nrmseRecovered
+totNRMSE = rmseConfirmed + rmseDeaths + rmseRecovered

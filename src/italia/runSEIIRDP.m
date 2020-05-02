@@ -117,4 +117,4 @@ axis tight
 
 %% results summary
 latent_period = 1 / gamma_fit
-totNRMSE = nrmseConfirmed + nrmseDeaths + nrmseRecovered
+totRMSE = rmseConfirmed + rmseDeaths + rmseRecovered
