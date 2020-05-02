@@ -1,5 +1,5 @@
 clearvars; close all; clc;
-addpath('../common/SEIIRDP/');
+addpath('../common/FN/');
 addpath('../common/stats/');
 addpath('../common/math/');
 
@@ -27,6 +27,8 @@ TotCases = tableCOVIDItaly_Tot.totCases'; % = #totPositive + #recovered + #dead
 
 %% setup model
 Npop = 60.48e6; % population
+undetectedDeaths = 0.36;  % see Gabanelli in Corriere
+UndetectedDeaths = Deaths * undetectedDeaths;
 time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss'))));
 
 % To simulate the cases after fitting
@@ -39,10 +41,11 @@ t = [0:N - 1].*dt;
 %% fit
 % initial conditions
 E0 = 1e-3 * Npop; % starting exposed = 0.1% population
-Ia0 = 1e-2 * Npop; % asymptomatic = 1% population
+Iu0 = 0.3 * Npop; % asymptomatic = 30% population (see Vo' study: 43 %)
 Iq0 = TotPositive(1);
 R0 = Recovered(1);
 D0 = Deaths(1);
+C0 = Deaths(1) * undetectedDeaths;
 
 % initial guess
 alpha_guess = 0; % protection rate
@@ -52,13 +55,14 @@ delta_guess = 0; % asymp -> test positive
 lambda_guess = [0.01, 1]; % recovery rate (when being symptomatic)
 kappa_guess = [1, 0.01]; % death rate (when being symptomatic)
 tau_guess = [0.01, 1];  % asym -> recover
-guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess];
+rho_guess = [1, 0.01]; % death rate (when being asymptomatic)
+guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess, rho_guess];
 
 % do the fit
-[alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, tau_fit] = fit(TotPositive, Recovered, Deaths, Npop, E0, Ia0, time, guess, 'Display', 'off');
+[alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, tau_fit, rho_fit] = fit(TotPositive, Recovered, Deaths, UndetectedDeaths, Npop, E0, Iu0, time, guess, 'Display', 'off');
 
 %% apply model with fitted parameters
-[S, E, Ia, Iq, R, D, P] = model(alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, tau_fit, Npop, E0, Ia0, Iq0, R0, D0, t);
+[S, E, Iu, Iq, R, D, P, C] = model(alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, tau_fit, rho_fit, Npop, E0, Iu0, Iq0, R0, D0, C0, t);
 
 % errors
 x = Iq; % simulated number of total positive
@@ -67,8 +71,8 @@ x = Iq; % simulated number of total positive
 x = R;  % recovered
 [rmseRecovered, nrmseRecovered] = mof(Recovered, x(1:1/dt:length(x)));
 
-x = D;  % dead
-[rmseDeaths, nrmseDeaths] = mof(Deaths, x(1:1/dt:length(x)));
+x = D + C;  % dead
+[rmseDeaths, nrmseDeaths] = mof(Deaths + UndetectedDeaths, x(1:1/dt:length(x)));
 
 %% plot
 figure
@@ -78,18 +82,18 @@ yyaxis left  % use left y-axis
 p1 = plotter(time1, Iq + R + D, '-b'); hold on % simulation
 p2 = plotter(time1, Iq, '-r'); hold on
 p3 = plotter(time1, R, '-g'); hold on
-p4 = plotter(time1, D, '-k'); hold on
+p4 = plotter(time1, D + C, '-k'); hold on
 
 p5 = plotter(time, TotCases, 'xb'); hold on % real data
 p6 = plotter(time, TotPositive, 'xr'); hold on
 p7 = plotter(time, Recovered, 'xg'); hold on
-p8 = plotter(time, Deaths, 'xk');
+p8 = plotter(time, Deaths + UndetectedDeaths, 'xk');
 
 yyaxis right  % use right y-axis for large numbers
 p9 = plotter(time1, E, '-c'); hold on
 p10 = plotter(time1, S, '--k'); hold on
 p11 = plotter(time1, P, ':k'); hold on
-p12 = plotter(time1, Ia, '-.k'); hold on
+p12 = plotter(time1, Iu, '-.k'); hold on
 
 % labels
 ylabel('#')
@@ -102,7 +106,7 @@ leg = {'total cases = positives + recovered + dead', ...
     'real total cases', ...
     'real total positives', ...
     'real total recovered', ...
-    'real total dead', ...
+    'real total dead (undetected too)', ...
     'exposed', ...
     'susceptible', ...
     'not susceptible', ...
