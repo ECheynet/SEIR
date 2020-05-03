@@ -1,4 +1,4 @@
-function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
+function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,kappaFun,varargout] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
 % [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] =
 % fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin) estimates the
 % parameters used in the SEIQRDP function, used to model the time-evolution
@@ -28,8 +28,8 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] = fit_S
 %   delta: scalar [1x1]: fitted  rate at which people enter in quarantine
 %   lambda: scalar [1x1]: fitted  cure rate
 %   kappa: scalar [1x1]: fitted  mortality rate
-%   lambdaFun: anonymous function giving the time evolution of the recovery
-%  rate
+%   lambdaFun: anonymous function giving the time-dependant recovery rate
+%   kappaFun: anonymous function giving the time-dependant death rate
 %   optional:
 %       - residual
 %       - Jacobian
@@ -86,20 +86,21 @@ t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm conver
 
 if ~isempty(R) % If there exists information on the recovered cases
     [guess,lambdaFun] = getLambdaFun(tTarget,Q,R,guess);
-    [guess,kappaFun] = getKappaFun(tTarget,Q,D,guess);
 else
     lambdaFun =  @(a,t) a(1)./(1+exp(-a(2)*(t-a(3)))); % default function
-    kappaFun = @(a,t) a(1).*exp(-a(2).*t);
 end
+
+[guess,kappaFun] = getKappaFun(tTarget,Q,D,guess);
 
 %% Main fitting
 
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
 lambdaMax = [1 5 100]; % lambdaMax(3) has the dimension of a time
 lambdaMin = [0 0 0]; % lambdaMax(3) has the dimension of a time
-kappaMax = [2 2];
-ub = [1, 3, 1, 1, lambdaMax, kappaMax]; % upper bound of the parameters
-lb = [0, 0, 0, 0, lambdaMin, 0, 0]; % lower bound of the parameters
+kappaMax = [1 1 100];
+kappaMin = [0 0 0];
+ub = [1, 5, 1, 1, lambdaMax, kappaMax]; % upper bound of the parameters
+lb = [0, 0, 0, 0, lambdaMin, kappaMin]; % lower bound of the parameters
 % call Lsqcurvefit
 [Coeff,~,residual,~,~,~,jacobian] = lsqcurvefit(@(para,t) modelFun1(para,t),...
     guess,tTarget(:)',input,lb,ub,options);
@@ -111,15 +112,15 @@ beta1 = abs(Coeff(2));
 gamma1 = abs(Coeff(3));
 delta1 = abs(Coeff(4));
 Lambda1 = abs(Coeff(5:7));
-Kappa1 = abs(Coeff(8:9));
+Kappa1 = abs(Coeff(8:10));
 
 %% optional outputs
-if nargout ==7
+if nargout ==8
     varargout{1} = residual;
-elseif nargout==8
+elseif nargout==9
     varargout{1} = residual;
     varargout{2} = jacobian;
-elseif nargout==9
+elseif nargout==10
     varargout{1} = residual;
     varargout{2} = jacobian;
     varargout{3} = modelFun1;
@@ -139,7 +140,7 @@ end
         gamma = abs(para(3));
         delta = abs(para(4));
         lambda0 = abs(para(5:7));
-        kappa0 = abs(para(8:9));
+        kappa0 = abs(para(8:10));
         
         
         %% Initial conditions
@@ -186,9 +187,9 @@ end
         R1 = interp1(t,R1,t0);
         D1 = interp1(t,D1,t0);
         if ~isempty(R)
-            output = [Q1;R1;D1];
+            output = ([Q1;R1;D1]);
         else
-            output = [Q1+R1;D1];
+            output = ([Q1+R1;D1]);
         end
         
     end
@@ -254,14 +255,18 @@ end
         
         % If less than 20 reported deceased, the death rate won't be
         % reliable. Therefore, no preliminary fitting is done.
-        if max(D)<20
-            kappaFun = @(a,t) a(1).*exp(-a(2).*t);
+        if max(D)<10
+            kappaFun = @(a,t) a(1)./(exp(a(2)*(t-a(3))) + exp(-a(2)*(t-a(3))));
         else
             
             try
                 opt=optimset('TolX',1e-6,'TolFun',1e-6,'Display','off');
                 
-                kappaFun = @(a,t) a(1).*exp(-a(2).*t);
+%                myFun1 = @(a,t) a(1).*exp(-a(2)*(t+(a(3))));
+               
+               myFun1 = @(a,t) a(1)./(exp(a(2)*(t-a(3))) + exp(-a(2)*(t-a(3))));
+               myFun2 = @(a,t) a(1).*exp(-a(2)*(t-a(3)).^2);
+               myFun3 = @(a,t) a(1) + exp(-a(2)*(t+a(3)));
                 
                 rate = (diff(D)./median(diff(tTarget(:))))./Q(2:end);
                 x = tTarget(2:end);
@@ -269,14 +274,32 @@ end
                 % A death rate larger than 3 is abnormally high. It is not
                 % used for the fitting.                 
                 rate(abs(rate)>3)=nan;
-                [kappaGuess] = lsqcurvefit(@(para,t) kappaFun(para,t),...
-                    guess(8:9),x(~isnan(rate)),rate(~isnan(rate)),[0 0],[2 2],opt);
+                [coeff1,r1] = lsqcurvefit(@(para,t) myFun1(para,t),...
+                    guess(8:10),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
+                [coeff2,r2] = lsqcurvefit(@(para,t) myFun2(para,t),...
+                    guess(8:10),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
+                [coeff3,r3] = lsqcurvefit(@(para,t) myFun3(para,t),...
+                    guess(8:10),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
+%                 
+%                 plot(x,rate,x,myFun1(coeff1,x),'r',x,myFun2(coeff2,x),'g',x,myFun3(coeff3,x),'b')
                 
-                guess(8:9) = kappaGuess; % update guess
+                minR = min([r1,r2,r3]);
+                if r1==minR
+                    kappaGuess = coeff1;
+                    kappaFun = myFun1;
+                elseif r2==minR
+                    kappaGuess = coeff2;
+                    kappaFun = myFun2;
+                elseif r3==minR
+                    kappaFun = myFun3;
+                    kappaGuess = coeff3;
+                end
+                
+                guess(8:10) = kappaGuess; % update guess
                 
             catch exceptionK
                 disp(exceptionK)
-                kappaFun = @(a,t) a(1).*exp(-a(2).*t);
+               kappaFun = @(a,t) a(1)./(exp(a(2)*(t-a(3))) + exp(-a(2)*(t-a(3))));
             end
             
         end

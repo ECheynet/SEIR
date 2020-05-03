@@ -1,4 +1,4 @@
-function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0,I0,Q0,R0,D0,t,lambdaFun)
+function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0,I0,Q0,R0,D0,t,lambdaFun,kappaFun)
 % [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda,kappa,Npop,E0,I0,R0,D0,t,lambdaFun)
 % simulate the time-histories of an epidemic outbreak using a generalized
 % SEIR model.
@@ -18,8 +18,8 @@ function [S,E,I,Q,R,D,P] = SEIQRDP(alpha,beta,gamma,delta,lambda0,kappa0,Npop,E0
 %   R0: scalar [1x1]: Initial number of recovered cases
 %   D0: scalar [1x1]: Initial number of dead cases
 %   t: vector [1xN] of time (double; it cannot be a datetime)
-%   lambdaFun: anonymous function giving the time evolution of the recovery
-%  rate
+%   lambdaFun: anonymous function giving the time-dependant recovery rate
+%   kappaFun: anonymous function giving the time-dependant death rate
 % 
 % Output
 %   S: vector [1xN] of the target time-histories of the susceptible cases
@@ -53,7 +53,7 @@ modelFun = @(Y,A,F) A*Y + F;
 dt = median(diff(t));
 
 lambda = lambdaFun(lambda0,t);
-kappa = kappa0(1)*exp(-kappa0(2).*t);
+kappa = kappaFun(kappa0,t);
 
 % ODE resolution
 
@@ -65,6 +65,7 @@ for ii=1:N-1
     Y(:,ii+1) = RK4(modelFun,Y(:,ii),A,F,dt);
 end
 
+% Y = round(Y);
 %% Write the outputs
 S = Y(1,1:N);
 E = Y(2,1:N);
