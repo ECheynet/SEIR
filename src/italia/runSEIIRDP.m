@@ -38,8 +38,8 @@ t = [0:N - 1].*dt;
 
 %% fit
 % initial conditions
-E0 = 1e-3 * Npop; % starting exposed = 0.1% population
-Ia0 = 1e-2 * Npop; % asymptomatic = 1% population
+E0 = 0.01 * Npop; % starting exposed
+Ia0 = 0.1 * Npop; % asymptomatic
 Iq0 = TotPositive(1);
 R0 = Recovered(1);
 D0 = Deaths(1);
@@ -75,12 +75,10 @@ figure
 plotter = @plot;
 
 yyaxis left  % use left y-axis
-p1 = plotter(time1, Iq + R + D, '-b'); hold on % simulation
 p2 = plotter(time1, Iq, '-r'); hold on
 p3 = plotter(time1, R, '-g'); hold on
 p4 = plotter(time1, D, '-k'); hold on
 
-p5 = plotter(time, TotCases, 'xb'); hold on % real data
 p6 = plotter(time, TotPositive, 'xr'); hold on
 p7 = plotter(time, Recovered, 'xg'); hold on
 p8 = plotter(time, Deaths, 'xk');
@@ -89,17 +87,15 @@ yyaxis right  % use right y-axis for large numbers
 p9 = plotter(time1, E, '-c'); hold on
 p10 = plotter(time1, S, '--k'); hold on
 p11 = plotter(time1, P, ':k'); hold on
-p12 = plotter(time1, Ia, '-.k'); hold on
+p12 = plotter(time1, Ia, '-.b'); hold on
 
 % labels
 ylabel('#')
 xlabel('time (days)')
 title('Italy');
-leg = {'total cases = positives + recovered + dead', ...
-    'total positives = quarantined + hospitalized', ...
+leg = {'total positives = quarantined + hospitalized', ...
     'total recovered', ...
     'total dead', ...
-    'real total cases', ...
     'real total positives', ...
     'real total recovered', ...
     'real total dead', ...
@@ -107,7 +103,7 @@ leg = {'total cases = positives + recovered + dead', ...
     'susceptible', ...
     'not susceptible', ...
     'asymptomatic'};
-legend([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12], leg{:});
+legend([p2, p3, p4, p6, p7, p8, p9, p10, p11, p12], leg{:});
 set(gcf, 'color', 'w')
 
 % prettify
@@ -117,4 +113,4 @@ axis tight
 
 %% results summary
 latent_period = 1 / gamma_fit
-totRMSE = rmseConfirmed + rmseDeaths + rmseRecovered
+totNRMSE = nrmseConfirmed + nrmseDeaths + nrmseRecovered
