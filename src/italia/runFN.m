@@ -27,6 +27,9 @@ TotPositive = tableCOVIDItaly_Tot.totPositive'; % = #quarantined + #hospitalized
 %% setup model
 Npop = 60.48e6; % population
 undetectedDeaths = 0.36;  % see Gabanelli in Corriere, account for errors
+tLockdown = 319;  % hours from first data to 9 March 2020
+pAsymptomatic = 0.43;  % p(Asymp | Confirmed)
+
 Deaths = Deaths * (1 + undetectedDeaths);
 time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss'))));
 
@@ -36,25 +39,24 @@ daysToPredict = 2 * 30;
 time1 = datetime(time(1)) : dt : datetime(datestr(floor(now) + datenum(daysToPredict)));
 N = numel(time1);
 t = [0:N - 1].*dt;
-tLockdown = 319;  % hours from first data to 9 March 2020
 
-%% fit
-% initial conditions
-E0 = 0.02 * Npop; % starting exposed
-Iu0 = 0.01 * Npop; % asymptomatic
+%% initial conditions
 Iq0 = TotPositive(1);
+Iu0 = 0.01 * Npop; % asymptomatic
+E0 = 0.02 * Npop; % starting exposed
 R0 = Recovered(1);
 D0 = Deaths(1);
 
+%% fit
 % initial guess
 alpha_guess = 1; % protection rate
-beta_guess = 0; % S -> E (by coming in contact with asymp)
-gamma_guess = 1/17; % (inverse of latent time in days) rate at which exposed can carry the virus
-delta_guess = 0; % asymp -> test positive
+beta_guess = 1; % S -> E (by coming in contact with asymp)
+gamma_guess = 1/16; % (inverse of latent time in days) rate at which exposed can carry the virus
+delta_guess = 1; % asymp -> test positive
 lambda_guess = [0, 1]; % recovery rate (when being symptomatic)
 kappa_guess = 1; % death rate (when being symptomatic)
-tau_guess = [1, 0];  % asym -> recover
-rho_guess = 0; % death rate (when being asymptomatic)
+tau_guess = 1;  % asym -> recover
+rho_guess = 1; % death rate (when being asymptomatic)
 guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess, rho_guess];
 
 % do the fit
@@ -113,7 +115,7 @@ leg = {'total positives = quarantined + hospitalized', ...
     'real total dead (undetected too)', ...
     'exposed', ...
     'susceptible', ...
-    'not susceptible', ...
+    'not susceptible + recovered from asymptomatic', ...
     'undetected (asymptomatic)'};
 legend([p2, p3, p4, p6, p7, p8, p9, p10, p11, p12], leg{:});
 set(gcf, 'color', 'w')
@@ -125,13 +127,11 @@ axis tight
 
 %% results summary
 latentPeriod = 1 / gamma_fit;
-pIuGivenConfirmed = delta_fit * Iu(tLockdown) / Iq(tLockdown);
-nWithVirus = Iu(tLockdown) + Iq(tLockdown) + E(tLockdown);
-avgNRMSE = mean([nrmseConfirmed, nrmseDeaths, nrmseRecovered])
+nWithVirus = Iu(tLockdown) + Iq(tLockdown);
+pIuGivenConfirmed = Iu(tLockdown) / nWithVirus;
+avgNRMSE = mean([nrmseConfirmed, nrmseDeaths, nrmseRecovered]);
 summary = ['latent period = ', num2str(latentPeriod), newline, ...
     'P(Iu | confirmed) at lockdown = ', num2str(pIuGivenConfirmed), newline, ...
-    '# got virus at lockdown = ', num2str(nWithVirus), newline, ...
+    '# who got virus at lockdown = ', num2str(nWithVirus), newline, ...
     'average NRMSE = ', num2str(avgNRMSE)];
-
-dim = [.7, .7, 0, 0];
-annotation('textbox', dim, 'String', summary, 'FitBoxToText','on');
+disp(summary);

@@ -4,7 +4,7 @@ function [alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, tau_
 %% Inputparseer
 p = inputParser();
 p.CaseSensitive = false;
-p.addOptional('tolX', 1e-6);  %  option for optimset
+p.addOptional('tolX', 1e-5);  %  option for optimset
 p.addOptional('tolFun', 1e-2);  %  option for optimset
 p.addOptional('Display', 'iter'); % Display option for optimset
 p.addOptional('dt', 0.1); % time step for the fitting
@@ -15,7 +15,7 @@ Display = p.Results.Display;
 dt = p.Results.dt;
 
 %% Options for lsqcurvfit
-options = optimset('TolX', tolX, 'TolFun', tolFun, 'MaxFunEvals', 1000000, 'Display', Display);
+options = optimset('TolX', tolX, 'TolFun', tolFun, 'MaxFunEvals', 1e6, 'Display', Display);
 
 %% Fitting the data
 % Write the target input into a matrix
@@ -45,8 +45,8 @@ gamma_fit = Coeff(3);
 delta_fit = Coeff(4);
 lambda_fit = Coeff(5:6);
 kappa_fit = Coeff(7);
-tau_fit = Coeff(8:9);
-rho_fit = Coeff(10);
+tau_fit = Coeff(8);
+rho_fit = Coeff(9);
 
 %% optimization function
 function [output] = optim(para, t0)
@@ -56,8 +56,8 @@ function [output] = optim(para, t0)
     delta = para(4);
     lambda = para(5:6);
     kappa = para(7);
-    tau = para(8:9);
-    rho = para(10);
+    tau = para(8);
+    rho = para(9);
 
     %% Initial conditions
     N = numel(t);
