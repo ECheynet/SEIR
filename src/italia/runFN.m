@@ -47,7 +47,7 @@ R0 = Recovered(1);
 D0 = Deaths(1);
 
 % initial guess
-alpha_guess = 0; % protection rate
+alpha_guess = 1; % protection rate
 beta_guess = 0; % S -> E (by coming in contact with asymp)
 gamma_guess = 1/17; % (inverse of latent time in days) rate at which exposed can carry the virus
 delta_guess = 0; % asymp -> test positive
@@ -114,7 +114,7 @@ leg = {'total positives = quarantined + hospitalized', ...
     'exposed', ...
     'susceptible', ...
     'not susceptible', ...
-    'asymptomatic'};
+    'undetected (asymptomatic)'};
 legend([p2, p3, p4, p6, p7, p8, p9, p10, p11, p12], leg{:});
 set(gcf, 'color', 'w')
 
@@ -128,7 +128,7 @@ latentPeriod = 1 / gamma_fit;
 pIuGivenConfirmed = delta_fit * Iu(tLockdown) / Iq(tLockdown);
 nWithVirus = Iu(tLockdown) + Iq(tLockdown) + E(tLockdown);
 avgNRMSE = mean([nrmseConfirmed, nrmseDeaths, nrmseRecovered])
-summary = ['latent period = ', num2str(pIuGivenConfirmed), newline, ...
+summary = ['latent period = ', num2str(latentPeriod), newline, ...
     'P(Iu | confirmed) at lockdown = ', num2str(pIuGivenConfirmed), newline, ...
     '# got virus at lockdown = ', num2str(nWithVirus), newline, ...
     'average NRMSE = ', num2str(avgNRMSE)];

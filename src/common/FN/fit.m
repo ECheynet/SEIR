@@ -4,18 +4,18 @@ function [alpha_fit, beta_fit, gamma_fit, delta_fit, lambda_fit, kappa_fit, tau_
 %% Inputparseer
 p = inputParser();
 p.CaseSensitive = false;
-p.addOptional('tolX', 1e-4);  %  option for optimset
-p.addOptional('tolFun', 1e-4);  %  option for optimset
+p.addOptional('tolX', 1e-6);  %  option for optimset
+p.addOptional('tolFun', 1e-2);  %  option for optimset
 p.addOptional('Display', 'iter'); % Display option for optimset
 p.addOptional('dt', 0.1); % time step for the fitting
 p.parse(varargin{:});
-tolX = p.Results.tolX ;
-tolFun = p.Results.tolFun ;
-Display = p.Results.Display ;
-dt = p.Results.dt ;
+tolX = p.Results.tolX;
+tolFun = p.Results.tolFun;
+Display = p.Results.Display;
+dt = p.Results.dt;
 
 %% Options for lsqcurvfit
-options = optimset('TolX', tolX, 'TolFun', tolFun, 'MaxFunEvals', 1000, 'Display', Display);
+options = optimset('TolX', tolX, 'TolFun', tolFun, 'MaxFunEvals', 1000000, 'Display', Display);
 
 %% Fitting the data
 % Write the target input into a matrix
@@ -30,14 +30,13 @@ t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm conver
 lowerBounds = zeros(1, numel(guess));
 upperBounds = ones(1, numel(guess));
 
-upperBounds(1) = 1e-2;
-
 lowerBounds(2) = 0.4;
 
-lowerBounds(3) = 1/25; % 1 / latent period
+lowerBounds(3) = 1/20; % 1 / latent period
 upperBounds(3) = 1/15;
 
-[Coeff,~,~,~,~,~,~] = lsqcurvefit(@(para,t) optim(para, t), guess, tTarget(:)', [TotPositive; Recovered; Deaths], lowerBounds, upperBounds, options);
+f = @(para, t) optim(para, t);
+[Coeff,~,~,~,~,~,~] = lsqcurvefit(f, guess, tTarget(:)', [TotPositive; Recovered; Deaths], lowerBounds, upperBounds, options);
 
 %% Write the fitted coeff in the outputs
 alpha_fit = Coeff(1);
@@ -49,40 +48,40 @@ kappa_fit = Coeff(7);
 tau_fit = Coeff(8:9);
 rho_fit = Coeff(10);
 
-%% nested functions
-    function [output] = optim(para, t0)
-        alpha = para(1);
-        beta = para(2);
-        gamma = para(3);
-        delta = para(4);
-        lambda = para(5:6);
-        kappa = para(7);
-        tau = para(8:9);
-        rho = para(10);
-        
-        %% Initial conditions
-        N = numel(t);
-        Y = zeros(7, N);
-        
-        Y(1,1) = Npop - TotPositive(1) - Recovered(1) - Deaths(1) - E0 - Iu0;
-        Y(2,1) = E0;
-        Y(3,1) = Iu0;
-        Y(4,1) = TotPositive(1);
-        Y(5,1) = Recovered(1);
-        Y(6,1) = Deaths(1);
-        Y(7,1) = 0; % P state
-        
-        %% ODE solution
-        [Y] = simulate(alpha, beta, gamma, delta, lambda, kappa, tau, rho, Y, Npop, t);
-        
-        Q1 = Y(4,1:N); % confirmed
-        R1 = Y(5,1:N); % recovered
-        D1 = Y(6,1:N); % dead
-        
-        Q1 = interp1(t, Q1, t0);
-        R1 = interp1(t, R1, t0);
-        D1 = interp1(t, D1, t0);
-        
-        output = [Q1; R1; D1];
-    end
+%% optimization function
+function [output] = optim(para, t0)
+    alpha = para(1);
+    beta = para(2);
+    gamma = para(3);
+    delta = para(4);
+    lambda = para(5:6);
+    kappa = para(7);
+    tau = para(8:9);
+    rho = para(10);
+
+    %% Initial conditions
+    N = numel(t);
+    Y = zeros(7, N);
+
+    Y(1,1) = Npop - TotPositive(1) - Recovered(1) - Deaths(1) - E0 - Iu0;
+    Y(2,1) = E0;
+    Y(3,1) = Iu0;
+    Y(4,1) = TotPositive(1);
+    Y(5,1) = Recovered(1);
+    Y(6,1) = Deaths(1);
+    Y(7,1) = 0; % P state
+
+    %% ODE solution
+    [Y] = simulate(alpha, beta, gamma, delta, lambda, kappa, tau, rho, Y, Npop, t);
+
+    Q1 = Y(4,1:N); % confirmed
+    R1 = Y(5,1:N); % recovered
+    D1 = Y(6,1:N); % dead
+
+    Q1 = interp1(t, Q1, t0);
+    R1 = interp1(t, R1, t0);
+    D1 = interp1(t, D1, t0);
+
+    output = [Q1; R1; D1];
+end
 end
