@@ -1,4 +1,4 @@
-function paramsFit = fit(TotPositive, Recovered, Deaths, Npop, E0, Iu0, time, paramsGuess, varargin)
+function paramsFit = fit(TotPositive, Recovered, Deaths, Npop, E0, Iu0, time, guess, varargin)
 % Estimates the parameters used in the SEIQRDP function, used to model the time-evolution of an epidemic outbreak.
 
 %% Inputparseer
@@ -20,28 +20,22 @@ options = optimset('TolX', tolX, 'TolFun', tolFun, 'MaxFunEvals', 1e6, 'Display'
 %% Fitting the data
 % Write the target input into a matrix
 if size(time,1)>size(time,2) && size(time,2)==1, time = time'; end
+if size(time,1)>1 && size(time,2)>1, error('Time should be a vector'); end
+
 fs = 1./dt;
 tTarget = round(datenum(time-time(1))*fs)/fs; % Number of days with one decimal 
 t = tTarget(1):dt:tTarget(end); % oversample to ensure that the algorithm converges
 
-% lsqcurvefit settings
-guess = paramsGuess.getAsVector();
-lowerBounds = paramsGuess.getLowerBounds();
-upperBounds = paramsGuess.getUpperBounds();
+% call Lsqcurvefit
+lowerBounds = guess.getLowerBounds();
+upperBounds = guess.getUpperBounds();
+guess = guess.getAsVector();
+
 f = @(params, t) optim(params, t);
 [Coeff,~,~,~,~,~,~] = lsqcurvefit(f, guess, tTarget(:)', [TotPositive; Recovered; Deaths], lowerBounds, upperBounds, options);
 
-%% Write the fit coeff in the outputs
-paramsFit = [ ...
-    Coeff(1), ...
-    Coeff(2), ...
-    Coeff(3), ...
-    Coeff(4), ...
-    Coeff(5), ...
-    Coeff(6), ...
-    Coeff(7), ...
-    Coeff(8) ...
-];
+%% Write the fitted coeff in the outputs
+paramsFit = ModelParams(Coeff);
 
     %% optimization function
     function [output] = optim(params, t0)
@@ -58,7 +52,7 @@ paramsFit = [ ...
         Y(7,1) = 0; % P state
 
         %% ODE solution
-        [Y] = simulate(params, Y, Npop, t);
+        [Y] = simulate(ModelParams(params), Y, Npop, t);
 
         Q1 = Y(4,1:N); % confirmed
         R1 = Y(5,1:N); % recovered

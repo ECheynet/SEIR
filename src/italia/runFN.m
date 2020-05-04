@@ -29,6 +29,8 @@ Npop = 60.48e6; % population
 undetectedDeaths = 0.36;  % see Gabanelli in Corriere, account for errors
 tLockdown = 319;  % hours from first data to 9 March 2020
 pAsymptomatic = 0.43;  % p(Asymp | Confirmed)
+initialAsymp = 0.01 * Npop; % asymptomatic
+initialLatent = 0.02 * Npop; % starting exposed
 
 Deaths = Deaths * (1 + undetectedDeaths);
 time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss'))));
@@ -38,28 +40,18 @@ dt = 1/24; % time step (each hour)
 daysToPredict = 2 * 30;
 time1 = datetime(time(1)) : dt : datetime(datestr(floor(now) + datenum(daysToPredict)));
 N = numel(time1);
-t = [0:N - 1].*dt;
+t = (0:N - 1).*dt;
 
 %% initial conditions
 Iq0 = TotPositive(1);
-Iu0 = 0.01 * Npop; % asymptomatic
-E0 = 0.02 * Npop; % starting exposed
+Iu0 = initialAsymp;
+E0 = initialLatent;
 R0 = Recovered(1);
 D0 = Deaths(1);
 
 %% fit
-paramsGuess = ModelParams([...
-    1, ... % protection rate
-    1, ... % S -> E (by coming in contact with asymp)
-    1/16, ... % (inverse of latent time in days) rate at which exposed can carry the virus
-    1, ... % asymp -> test positive
-    1, ... % recovery rate (when being symptomatic)
-    1, ... % death rate (when being symptomatic)
-    1, ... % asym -> recover
-    1 ... % death rate (when being asymptomatic)
-]);
-
-% do the fit
+% initial guess
+paramsGuess = ModelParams([1, 1, 1/16, 1, [0, 1], 1, 1, 1]);
 paramsFit = fit(TotPositive, Recovered, Deaths, Npop, E0, Iu0, time, paramsGuess, 'Display', 'off');
 
 %% apply model with fitted parameters
@@ -77,36 +69,35 @@ x = D;  % dead
 
 %% plot
 figure
-plotter = @plot;
 
 yyaxis left  % use left y-axis
-p2 = plotter(time1, Iq, '-r'); hold on
-p3 = plotter(time1, R, '-g'); hold on
-p4 = plotter(time1, D, '-k'); hold on
+p2 = plot(time1, Iq, '-r'); hold on
+p3 = plot(time1, R, '-g'); hold on
+p4 = plot(time1, D, '-k'); hold on
 
-p6 = plotter(time, TotPositive, 'xr'); hold on
-p7 = plotter(time, Recovered, 'xg'); hold on
-p8 = plotter(time, Deaths, 'xk');
+p6 = plot(time, TotPositive, 'xr'); hold on
+p7 = plot(time, Recovered, 'xg'); hold on
+p8 = plot(time, Deaths, 'xk');
 
 yyaxis right  % use right y-axis for large numbers
-p9 = plotter(time1, E, '-c'); hold on
-p10 = plotter(time1, S, '--k'); hold on
-p11 = plotter(time1, P, ':k'); hold on
-p12 = plotter(time1, Iu, '-.b'); hold on
+p9 = plot(time1, E, '-c'); hold on
+p10 = plot(time1, S, '--k'); hold on
+p11 = plot(time1, P, ':k'); hold on
+p12 = plot(time1, Iu, '-.b'); hold on
 
 % labels
 ylabel('number of cases')
 xlabel('time (days)')
 title('COVID-19 in Italy');
-leg = {'positives = quarantined + hospitalized', ...
-    'recovered', ...
-    'dead', ...
-    'real positives', ...
-    'real recovered', ...
-    'real dead (undetected too)', ...
-    'latent', ...
+leg = {'total positives = quarantined + hospitalized', ...
+    'total recovered', ...
+    'total dead', ...
+    'real total positives', ...
+    'real total recovered', ...
+    'real total dead (undetected too)', ...
+    'exposed', ...
     'susceptible', ...
-    'protected + recovered from asymptomatic', ...
+    'not susceptible + recovered from asymptomatic', ...
     'undetected (asymptomatic)'};
 legend([p2, p3, p4, p6, p7, p8, p9, p10, p11, p12], leg{:});
 set(gcf, 'color', 'w')
@@ -117,7 +108,7 @@ grid minor
 axis tight
 
 %% results summary
-latentPeriod = 1 / paramsFit(3);
+latentPeriod = 1 / paramsFit.gamma;
 nWithVirus = Iu(tLockdown) + Iq(tLockdown);
 pIuGivenConfirmed = Iu(tLockdown) / nWithVirus;
 avgNRMSE = mean([nrmseConfirmed, nrmseDeaths, nrmseRecovered]);

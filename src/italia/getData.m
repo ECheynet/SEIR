@@ -34,7 +34,7 @@ opts.PreserveVariableNames = true;
 
 % Download the CSV file
 % uncomment to to update data
-% websave('data.csv', fileURL);
+websave('data.csv', fileURL);
 
 % Import the data
 fid = fopen('data.csv');

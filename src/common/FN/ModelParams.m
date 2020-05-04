@@ -1,14 +1,14 @@
 classdef ModelParams
    properties
-      alpha
-      beta
-      gamma
-      delta
-      lambda
-      kappa
-      tau
-      rho
-      n
+      alpha % protection rate
+      beta % S -> E (by coming in contact with asymp)
+      gamma % 1 / latent time
+      delta % asymp -> test positive
+      lambda % recovery rate (when being symptomatic)
+      kappa % death rate (when being symptomatic)
+      tau % asym -> recover
+      rho % death rate (when being asymptomatic)
+      n  % number of coefficients
    end
    methods        
         function obj = ModelParams(coefficients)
@@ -16,10 +16,10 @@ classdef ModelParams
             obj.beta = coefficients(2);
             obj.gamma = coefficients(3);
             obj.delta = coefficients(4);
-            obj.lambda = coefficients(5);
-            obj.kappa = coefficients(6);
-            obj.tau = coefficients(7);
-            obj.rho = coefficients(8);
+            obj.lambda = coefficients(5:6);
+            obj.kappa = coefficients(7);
+            obj.tau = coefficients(8);
+            obj.rho = coefficients(9);
             
             obj.n = length(coefficients);
         end
@@ -46,7 +46,15 @@ classdef ModelParams
             upperBounds(3) = 1/15; % 1 / latent period
         end
         function A = getModelMatrix(obj)
-            A = 1 % todo
+            A = zeros(7);
+            
+            A(1, 1) = -obj.alpha;  % out of  S
+            A(2, 2) = -obj.gamma;  % out of E
+            A(3, 2:3) = [obj.gamma, -obj.delta-obj.tau-obj.rho];  % asym
+            A(4, 3:4) = [obj.delta, -obj.kappa-obj.lambda];  % test positive
+            A(5, 4) = obj.lambda;  % recover: lambda * Iq
+            A(6, 3:4) = [obj.rho, obj.kappa];  % dead
+            A(7, 1:3) = [obj.alpha, 0, obj.tau];  % not susciptable
         end
     end
 end
