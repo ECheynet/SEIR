@@ -8,7 +8,6 @@ function [Y] = simulate(alpha, beta, gamma, delta, lambda0, kappa0, tau0, Y, Npo
     tau = tau0(1) * (1 - exp(-tau0(2).*t));  % exponential growth of hospital beds
 
     for i=1:N-1
-        % interactions = [alpha, gamma, delta, lambda(i), kappa(i), tau(i)];  % pack coefficients
         interactions = [alpha, gamma, delta, lambda(i), kappa(i), tau(i)];  % pack coefficients
         A = getModelMatrix(interactions);
         SI = Y(1, i) * Y(3, i);  % S * Ia

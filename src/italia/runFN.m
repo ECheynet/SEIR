@@ -23,11 +23,10 @@ Deaths = tableCOVIDItaly_Tot.dead';
 % Hospitalized = tableCOVIDItaly_Tot.hospitalized';
 % Quarantined = tableCOVIDItaly_Tot.quarantined';
 TotPositive = tableCOVIDItaly_Tot.totPositive'; % = #quarantined + #hospitalized
-TotCases = tableCOVIDItaly_Tot.totCases'; % = #totPositive + #recovered + #dead
 
 %% setup model
 Npop = 60.48e6; % population
-undetectedDeaths = 0.35;  % see Gabanelli in Corriere, account for errors
+undetectedDeaths = 0.36;  % see Gabanelli in Corriere, account for errors
 Deaths = Deaths * (1 + undetectedDeaths);
 time = unique(datetime(datestr(datenum(tableCOVIDItaly.Date,'yyyy-mm-DDThh:MM:ss'))));
 
@@ -37,24 +36,25 @@ daysToPredict = 2 * 30;
 time1 = datetime(time(1)) : dt : datetime(datestr(floor(now) + datenum(daysToPredict)));
 N = numel(time1);
 t = [0:N - 1].*dt;
+tLockdown = 319;  % hours from first data to 9 March 2020
 
 %% fit
 % initial conditions
-E0 = 0.3 * Npop; % starting exposed
-Iu0 = 0.1 * Npop; % asymptomatic
+E0 = 0.02 * Npop; % starting exposed
+Iu0 = 0.01 * Npop; % asymptomatic
 Iq0 = TotPositive(1);
 R0 = Recovered(1);
 D0 = Deaths(1);
 
 % initial guess
-alpha_guess = 0.7; % protection rate
-beta_guess = 0.8; % S -> E (by coming in contact with asymp)
+alpha_guess = 0; % protection rate
+beta_guess = 0; % S -> E (by coming in contact with asymp)
 gamma_guess = 1/17; % (inverse of latent time in days) rate at which exposed can carry the virus
-delta_guess = 0.2; % asymp -> test positive
-lambda_guess = [0.01, 1]; % recovery rate (when being symptomatic)
+delta_guess = 0; % asymp -> test positive
+lambda_guess = [0, 1]; % recovery rate (when being symptomatic)
 kappa_guess = 1; % death rate (when being symptomatic)
-tau_guess = [0.01, 0.05];  % asym -> recover
-rho_guess = 1; % death rate (when being asymptomatic)
+tau_guess = [1, 0];  % asym -> recover
+rho_guess = 0; % death rate (when being asymptomatic)
 guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess, rho_guess];
 
 % do the fit
@@ -65,7 +65,7 @@ guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_
     beta_fit, ...
     gamma_fit, ...
     delta_fit, ...
-    lambda_fit * 1.1, ...
+    lambda_fit, ...
     kappa_fit, ...
     tau_fit, ...
     rho_fit, ...
@@ -102,9 +102,9 @@ p11 = plotter(time1, P, ':k'); hold on
 p12 = plotter(time1, Iu, '-.b'); hold on
 
 % labels
-ylabel('#')
+ylabel('number of cases')
 xlabel('time (days)')
-title('Italy');
+title('COVID-19 in Italy');
 leg = {'total positives = quarantined + hospitalized', ...
     'total recovered', ...
     'total dead', ...
@@ -124,5 +124,14 @@ grid minor
 axis tight
 
 %% results summary
-latent_period = 1 / gamma_fit
-totNRMSE = nrmseConfirmed + nrmseDeaths + nrmseRecovered
+latentPeriod = 1 / gamma_fit;
+pIuGivenConfirmed = delta_fit * Iu(tLockdown) / Iq(tLockdown);
+nWithVirus = Iu(tLockdown) + Iq(tLockdown) + E(tLockdown);
+avgNRMSE = mean([nrmseConfirmed, nrmseDeaths, nrmseRecovered])
+summary = ['latent period = ', num2str(pIuGivenConfirmed), newline, ...
+    'P(Iu | confirmed) at lockdown = ', num2str(pIuGivenConfirmed), newline, ...
+    '# got virus at lockdown = ', num2str(nWithVirus), newline, ...
+    'average NRMSE = ', num2str(avgNRMSE)];
+
+dim = [.7, .7, 0, 0];
+annotation('textbox', dim, 'String', summary, 'FitBoxToText','on');

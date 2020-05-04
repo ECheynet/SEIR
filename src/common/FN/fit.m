@@ -15,7 +15,7 @@ Display = p.Results.Display ;
 dt = p.Results.dt ;
 
 %% Options for lsqcurvfit
-options = optimset('TolX', tolX, 'TolFun', tolFun, 'MaxFunEvals', 10000, 'Display', Display);
+options = optimset('TolX', tolX, 'TolFun', tolFun, 'MaxFunEvals', 1000, 'Display', Display);
 
 %% Fitting the data
 % Write the target input into a matrix

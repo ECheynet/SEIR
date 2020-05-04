@@ -49,7 +49,7 @@ alpha_guess = 0; % protection rate
 beta_guess = 0; % S -> E (by coming in contact with asymp)
 gamma_guess = 1/17; % (inverse of latent time in days) rate at which exposed can carry the virus
 delta_guess = 0; % asymp -> test positive
-lambda_guess = [0.01, 1]; % recovery rate (when being symptomatic)
+lambda_guess = [0, 1]; % recovery rate (when being symptomatic)
 kappa_guess = [1, 0.01]; % death rate (when being symptomatic)
 tau_guess = [0.01, 1];  % asym -> recover
 guess = [alpha_guess, beta_guess, gamma_guess, delta_guess, lambda_guess, kappa_guess, tau_guess];
@@ -113,4 +113,4 @@ axis tight
 
 %% results summary
 latent_period = 1 / gamma_fit
-totNRMSE = nrmseConfirmed + nrmseDeaths + nrmseRecovered
+avgNRMSE = mean([nrmseConfirmed, nrmseDeaths, nrmseRecovered])
