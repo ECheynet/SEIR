@@ -65,7 +65,7 @@ D(D<0)=0; % negative values are not possible
 
 if isempty(R)
     warning(' No data available for "Recovered" ')
-    input = [Q;D];
+    input = [Q;D]; % In this aprticular case, Q is actually the number of active + recovered cases
 else
     input = [Q;R;D];
 end
@@ -90,15 +90,27 @@ else
     lambdaFun =  @(a,t) a(1)./(1+exp(-a(2)*(t-a(3)))); % default function
 end
 
+% Get a first estimate of kappa
+try
 [guess,kappaFun] = getKappaFun(tTarget,Q,D,guess);
+catch exception
+    warning('Failure to fit the death rate. A poor fit is expected!');
+end
 
 %% Main fitting
 
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
 lambdaMax = [1 5 100]; % lambdaMax(3) has the dimension of a time
 lambdaMin = [0 0 0]; % lambdaMax(3) has the dimension of a time
-kappaMax = [1 1 100];
-kappaMin = [0 0 0];
+
+if isempty(R)
+    % Significantly constraint the death rate
+    kappaMax = guess(8:10)*1.05; % Constrain the guess if no R available
+    kappaMin = guess(8:10)*0.95; % Constrain the guess if no R available
+else
+    kappaMax = guess(8:10)*3; % bound the guess around the initial fit
+    kappaMin = guess(8:10)/3; % bound the guess around the initial fit
+end
 ub = [1, 5, 1, 1, lambdaMax, kappaMax]; % upper bound of the parameters
 lb = [0, 0, 0, 0, lambdaMin, kappaMin]; % lower bound of the parameters
 % call Lsqcurvefit
@@ -281,7 +293,7 @@ end
                 [coeff3,r3] = lsqcurvefit(@(para,t) myFun3(para,t),...
                     guess(8:10),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
 %                 
-%                 plot(x,rate,x,myFun1(coeff1,x),'r',x,myFun2(coeff2,x),'g',x,myFun3(coeff3,x),'b')
+%                  figure;plot(x,rate,x,myFun1(coeff1,x),'r',x,myFun2(coeff2,x),'g',x,myFun3(coeff3,x),'b')
                 
                 minR = min([r1,r2,r3]);
                 if r1==minR
@@ -349,10 +361,12 @@ end
                 rate(abs(rate)>1|abs(rate)==0)=nan;
                 
                 [coeff1,r1] = lsqcurvefit(@(para,t) myFun1(para,t),...
-                    [0.2,0.1,1],x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 2 100],opt);
+                    [0.01,0.01,1],x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
                 [coeff2,r2] = lsqcurvefit(@(para,t) myFun2(para,t),...
-                    [0.2,0.1,min(x(~isnan(rate)))],x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 2 100],opt);
+                    [0.01,0.01,min(x(~isnan(rate)))],x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
                 
+                
+%                  figure;plot(x,rate,x,myFun1(coeff1,x),'r',x,myFun2(coeff2,x),'g--')
                 
                 % myFun1 is more stable on a long term persepective
 %               % If coeff2 have reached the upper boundaries, myFUn1 is

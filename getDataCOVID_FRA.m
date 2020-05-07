@@ -6,17 +6,16 @@ function [tableConfirmed,tableDeaths,tableRecovered,time] = getDataCOVID_FRA()
 % References:
 % [1]  https://github.com/cedricguadalupe/FRANCE-COVID-19 
 % 
-% Author: E. Cheynet - Last modified - 28-03-2020
+% Author: E. Cheynet - Last modified - 07-05-2020
 % 
 % see also fit_SEIQRDP.m SEIQRDP.m
 
 %% Options and names
 
-Nregions = 23;
+Nregions = 20;
 
 opts = delimitedTextImportOptions('NumVariables', Nregions);
-opts.VariableNames = ["Date", "AuvergneRhoneAlpes", "BourgogneFrancheComte", "Bretagne", "CentreValdeLoire", "Corse", "GrandEst", "HautsdeFrance", "IledeFrance", "Normandie", "NouvelleAquitaine", "Occitanie", "PaysdelaLoire", "ProvenceAlpesCotedAzur", "Guadeloupe", "SaintBarthlmy", "SaintMartin", "Martinique", "Guyane", "LaRunion", "Mayotte", "NouvelleCaldonie", "Total"];opts.VariableTypes(1) = {'string'};
-
+opts.VariableNames = ["Date", "AuvergneRhoneAlpes", "BourgogneFrancheComte", "Bretagne", "CentreValdeLoire", "Corse", "GrandEst", "HautsdeFrance", "IledeFrance", "Normandie", "NouvelleAquitaine", "Occitanie", "PaysdelaLoire", "ProvenceAlpesCotedAzur", "Guadeloupe", "Martinique", "Guyane", "LaRunion", "Mayotte",  "Total"];opts.VariableTypes(1) = {'string'};
 opts.VariableTypes(1) = {'datetime'};
 opts.VariableTypes(2:Nregions) = {'double'};
 % Specify file level properties
