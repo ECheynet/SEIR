@@ -12,7 +12,7 @@ The present submission includes several majors difference with respect to ref. [
 The present submission contains:
 - A function SEIQRDP.m that is used to simulate the time histories of the infectious, recovered and dead cases (among others)
 - A function fit_SEIQRDP.m that estimates the eight parameters used in SEIQRDP.m in the least square sense.
-- One example file Tutorial.mlx, which presents the numerical implementation.
+- One example file Documentation.mlx, which presents the numerical implementation.
 - One example file Example_province_region.mlx, which uses data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Hubei province (China).
 - One example file Example_Country.mlx, which uses data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for a coutnry.
 - One file "ItalianRegions.mlx" written by Matteo Secli (https://github.com/matteosecli) that I have modified for a slightly more robust fitting.
