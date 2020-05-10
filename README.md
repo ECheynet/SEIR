@@ -1,7 +1,7 @@
 # Generalized SEIR Epidemic Model (fitting and computation)
 
 [![View Generalized SEIR Epidemic Model (fitting and computation) on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://se.mathworks.com/matlabcentral/fileexchange/74545-generalized-seir-epidemic-model-fitting-and-computation)
-[![DOI](https://www.zenodo.org/badge/247972639.svg)](https://www.zenodo.org/badge/latestdoi/247972639)
+[![DOI](https://zenodo.org/badge/247972639.svg)](https://zenodo.org/badge/latestdoi/247972639)
 
 ## Description
 A generalized SEIR model with seven states [2] is numerically implemented. The implementation is done from scratch except for the fitting, that relies on the function "lsqcurvfit".
