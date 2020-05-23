@@ -1,4 +1,4 @@
-function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,kappaFun,varargout] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
+function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,kappaFun] = fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin)
 % [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,varargout] =
 % fit_SEIQRDP(Q,R,D,Npop,E0,I0,time,guess,varargin) estimates the
 % parameters used in the SEIQRDP function, used to model the time-evolution
@@ -30,12 +30,8 @@ function [alpha1,beta1,gamma1,delta1,Lambda1,Kappa1,lambdaFun,kappaFun,varargout
 %   kappa: scalar [1x1]: fitted  mortality rate
 %   lambdaFun: anonymous function giving the time-dependant recovery rate
 %   kappaFun: anonymous function giving the time-dependant death rate
-%   optional:
-%       - residual
-%       - Jacobian
-%       - The function @SEIQRDP_for_fitting
 %
-% Author: E. Cheynet - UiB - last modified 30-04-2020
+% Author: E. Cheynet - UiB - last modified 23-05-2020
 %
 % see also SEIQRDP.m
 
@@ -100,21 +96,28 @@ end
 %% Main fitting
 
 modelFun1 = @SEIQRDP_for_fitting; % transform a nested function into anonymous function
-lambdaMax = [1 5 100]; % lambdaMax(3) has the dimension of a time
-lambdaMin = [0 0 0]; % lambdaMax(3) has the dimension of a time
 
 if isempty(R)
     % Significantly constraint the death rate
     kappaMax = guess(8:10)*1.05; % Constrain the guess if no R available
     kappaMin = guess(8:10)*0.95; % Constrain the guess if no R available
+    lambdaMax = [1 1 100]; % bound the guess around the initial fit
+    lambdaMin = [0 0 0]; % bound the guess around the initial fit   
 else
     kappaMax = guess(8:10)*3; % bound the guess around the initial fit
     kappaMin = guess(8:10)/3; % bound the guess around the initial fit
+    lambdaMax = guess(5:7)*3; % bound the guess around the initial fit
+    lambdaMin = guess(5:7)/3; % bound the guess around the initial fit
+    
+    if lambdaMax(3)<1e-2
+        lambdaMax(3) = 100;
+        lambdaMin(3) = 0;
+    end
 end
 ub = [1, 5, 1, 1, lambdaMax, kappaMax]; % upper bound of the parameters
 lb = [0, 0, 0, 0, lambdaMin, kappaMin]; % lower bound of the parameters
 % call Lsqcurvefit
-[Coeff,~,residual,~,~,~,jacobian] = lsqcurvefit(@(para,t) modelFun1(para,t),...
+[Coeff] = lsqcurvefit(@(para,t) modelFun1(para,t),...
     guess,tTarget(:)',input,lb,ub,options);
 
 
@@ -125,22 +128,6 @@ gamma1 = abs(Coeff(3));
 delta1 = abs(Coeff(4));
 Lambda1 = abs(Coeff(5:7));
 Kappa1 = abs(Coeff(8:10));
-
-%% optional outputs
-if nargout ==8
-    varargout{1} = residual;
-elseif nargout==9
-    varargout{1} = residual;
-    varargout{2} = jacobian;
-elseif nargout==10
-    varargout{1} = residual;
-    varargout{2} = jacobian;
-    varargout{3} = modelFun1;
-elseif nargout>9
-    error('Too many outputs specified')
-end
-
-
 
 %% nested functions
 
@@ -277,7 +264,7 @@ end
 %                myFun1 = @(a,t) a(1).*exp(-a(2)*(t+(a(3))));
                
                myFun1 = @(a,t) a(1)./(exp(a(2)*(t-a(3))) + exp(-a(2)*(t-a(3))));
-               myFun2 = @(a,t) a(1).*exp(-a(2)*(t-a(3)).^2);
+               myFun2 = @(a,t) a(1).*exp(-(a(2)*(t-a(3))).^2);
                myFun3 = @(a,t) a(1) + exp(-a(2)*(t+a(3)));
                 
                 rate = (diff(D)./median(diff(tTarget(:))))./Q(2:end);
@@ -361,9 +348,9 @@ end
                 rate(abs(rate)>1|abs(rate)==0)=nan;
                 
                 [coeff1,r1] = lsqcurvefit(@(para,t) myFun1(para,t),...
-                    [0.01,0.01,1],x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
+                    guess(5:7),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
                 [coeff2,r2] = lsqcurvefit(@(para,t) myFun2(para,t),...
-                    [0.01,0.01,min(x(~isnan(rate)))],x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
+                    guess(5:7),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
                 
                 
 %                  figure;plot(x,rate,x,myFun1(coeff1,x),'r',x,myFun2(coeff2,x),'g--')
