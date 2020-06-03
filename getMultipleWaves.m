@@ -42,7 +42,7 @@ indT2 = find(time>=tStart2);
 %% Simulate first wave
 % Initial conditions
 Q0 = Active(indT1(1));
-E0 = 0.5*Q0; % Initial number of exposed cases. Unknown but unlikely to be zero.
+E0 = 0.25*Q0; % Initial number of exposed cases. Unknown but unlikely to be zero.
 I0 = 5*E0; % Initial number of infectious cases. Unknown but unlikely to be zero.
 R0 = Recovered(indT1(1)); 
 D0 = Deaths(indT1(1)); 
