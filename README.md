@@ -16,7 +16,6 @@ The present submission contains:
 - One example file Example_province_region.mlx, which uses data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for Hubei province (China).
 - One example file Example_Country.mlx, which uses data collected by the Johns Hopkins University for the COVID-19 epidemy [3] for a coutnry.
 - One file "ItalianRegions.mlx" written by Matteo Secli (https://github.com/matteosecli) that I have modified for a slightly more robust fitting.
-- One file "FrenchRegions.mlx", which gives another example for Data collected in France. The data quality is not as good as expected, so the fitting is unlikely to provide reliable parameter estimates.
 - One example file ChineseProvinces.mlx, which illustrates how the function fit_SEIQRDP.m is used in a for loop to be fitted to the data [3] from the different Chinese provinces.
 - One example "uncertaintiesIssues.mlx", which illustrates the danger of fitting limited data sets.
 - One example "Example_US_cities.mlx" that illustrates the fitting when "recovered" data are not available.
@@ -24,7 +23,6 @@ The present submission contains:
 
 - One function getDataCOVID, which read from [3] the data collected by Johns Hopkins University.
 - One function getDataCOVID_ITA written by Matteo Secli (https://github.com/matteosecli), that collects the updated data of the COVID-19 pandemic in Italy from the Italian government [4]
-- One function getDataCOVID_FRA that collects the updated data in France from [5]
 - One function getDataCOVID_US that collects the updated data in the USA from [3]
 - One function checkRates.m that plots the fitted and computed death and recovery rates (quality check)
 - One function getMultipleWaves.m that simulate and fit the SEIRQDP model to the situations where multiple epidemic waves are detected.
@@ -40,9 +38,6 @@ Any question, comment or suggestion is welcome.
 [3] https://github.com/CSSEGISandData/COVID-19
 
 [4] https://github.com/pcm-dpc/COVID-19
-
-[5] https://github.com/cedricguadalupe/FRANCE-COVID-19
-
 
 
 ## Example 1 (case of COVID-19 in Italy) 
