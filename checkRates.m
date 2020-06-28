@@ -26,7 +26,8 @@ D = D(:);
 time = time(:);
 
 rateD = (diff(D)./diff(datenum(time-time(1))))./Q(2:end);
-rateD(abs(rateD)>3) = nan; % remove bovious outliers
+rateD(abs(rateD)>3) = nan; % remove obvious outliers
+rateD(abs(rateD)<0) = nan; % This is not a zombie simulation
 
 if ~isempty(R)
     rateR = (diff(R)./diff(datenum(time-time(1))))./Q(2:end);

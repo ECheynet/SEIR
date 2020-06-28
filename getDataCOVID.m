@@ -44,7 +44,7 @@ for ii=1:numel(status)
     end
 end
 
-time = datetime(2020,01,22):days(1):datetime(datestr(floor(datenum(now))))-datenum(1);
+time = datetime(2020,01,22):days(1):datetime(datestr(floor(datenum(now))), 'Locale', 'en_US')-datenum(1);
 
 % fid = fopen('dummy.csv');
 % time = textscan(fid,repmat('%s',1,size(tableConfirmed,2)), 1, 'Delimiter',',');

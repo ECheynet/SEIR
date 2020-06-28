@@ -49,8 +49,7 @@ tableDeaths =readtable('dummy.csv', opts);
 delete('dummy.csv')
 
 %% Get time
-time = datetime(2020,01,22):days(1):datetime(datestr(floor(datenum(now))))-datenum(1);
-
+time = datetime(2020,01,22):days(1):datetime(datestr(floor(datenum(now))), 'Locale', 'en_US')-datenum(1);
 %% So far no data on recovered
 
 tableRecovered = [];
