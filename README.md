@@ -7,7 +7,7 @@
 ## Description
 A generalized SEIR model with seven states [2] is numerically implemented. The implementation is done from scratch except for the fitting, that relies on the function "lsqcurvfit". Therefore, the present implementation likely differs from the one used in ref.[2].
 
-This Matlab implementation includes also some major differences with respect to ref. [2]. Among them is the expression of the death rate and recovery rate, which are analytical and empirical functions of the time. The idea behind this time-dependency as that the death and recovery rate should converge toward a constant value as the time increases. If the death rate is kept constant, the number of death may be overestimated. Births and natural death are not modelled here. This means that the total population, including the number of deceased cases, is kept constant. Note that ref. [2] is a preprint that is not peer-reviewed and I am not qualified enough to judge the quality of the paper.
+This Matlab implementation includes also some major differences with respect to ref. [2]. Among them is the expression of the death rate and recovery rate, which are analytical and empirical functions of the time. The idea behind this time-dependency is that the death and recovery rate should converge toward a constant value as the time increases. If the death rate is kept constant, the number of death may be overestimated. Births and natural death are not modelled here. This means that the total population, including the number of deceased cases, is kept constant. Note that ref. [2] is a preprint that is not peer-reviewed and I am not qualified enough to judge the quality of the paper.
 
 ## Content
 The present submission contains:
