@@ -1,4 +1,4 @@
-function [Q,R,D,T] = getMultipleWaves(guess,Npop,time,Confirmed,Recovered,Deaths,tStart1,tStart2,tEnd)
+function [Q,R,D,T] = getMultipleWaves(guess,Npop,time,Confirmed,Recovered,Deaths,tStart1,tStart2,tEnd,Q0,E0,I0)
 % [Q,R,D,T] =
 % getMultipleWaves(guess,Npop,time,Confirmed,Recovered,Deaths,tStart1,tStart2,tEnd)
 % simulate the number of recovered, deaths and active cases for the
@@ -14,6 +14,9 @@ function [Q,R,D,T] = getMultipleWaves(guess,Npop,time,Confirmed,Recovered,Deaths
 %   tStart1: datetime [1x1]: Initial time for the first wave
 %   tStart2: datetime [1x1]: Initial time for the second wave
 %   tEnd: datetime [1x1]: Final time for the simulation
+%   Q0: datetime [1x1]: Initial number of quarantined cases
+%   E0: datetime [1x1]: Initial number of exposed cases
+%   I0: datetime [1x1]: Initial number of infectious cases
 % 
 % Outputs
 %   Q: double [1xN1]: Time histories of the quarantined/active cases 
@@ -41,12 +44,8 @@ indT2 = find(time>=tStart2);
 
 %% Simulate first wave
 % Initial conditions
-Q0 = Active(indT1(1));
-E0 = 0.25*Q0; % Initial number of exposed cases. Unknown but unlikely to be zero.
-I0 = 5*E0; % Initial number of infectious cases. Unknown but unlikely to be zero.
 R0 = Recovered(indT1(1)); 
 D0 = Deaths(indT1(1)); 
-
 [E1,I1,Q1,R1,D1,T1] = computeWave(Active(indT1),Recovered(indT1),...
     Deaths(indT1),E0,I0,Q0,R0,D0,time(indT1),tStart1,tStart2,guess);
 

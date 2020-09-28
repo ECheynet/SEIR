@@ -103,14 +103,25 @@ if isempty(R)
     kappaMin = guess(8:10)*0.95; % Constrain the guess if no R available
     lambdaMax = [1 1 100]; % bound the guess around the initial fit
     lambdaMin = [0 0 0]; % bound the guess around the initial fit   
+     
+    if kappaMax(3)<1e-1
+        kappaMax(3) = 100;
+        kappaMin(3) = 0;
+     end
+
 else
-    kappaMax = guess(8:10)*3; % bound the guess around the initial fit
-    kappaMin = guess(8:10)/3; % bound the guess around the initial fit
-    lambdaMax = guess(5:7)*3; % bound the guess around the initial fit
-    lambdaMin = guess(5:7)/3; % bound the guess around the initial fit
+    kappaMax = guess(8:10)*2.0; % bound the guess around the initial fit
+    kappaMin = guess(8:10)/2.0; % bound the guess around the initial fit
+    lambdaMax = guess(5:7)*2.0; % bound the guess around the initial fit
+    lambdaMin = guess(5:7)/2.0; % bound the guess around the initial fit
+
+     if kappaMax(3)<1e-1
+        kappaMax(3) = 20;
+        kappaMin(3) = 0;
+     end
     
-    if lambdaMax(3)<1e-2
-        lambdaMax(3) = 100;
+    if lambdaMax(3)<1e-1
+        lambdaMax(3) = 20;
         lambdaMin(3) = 0;
     end
 end
@@ -273,6 +284,13 @@ Kappa1 = abs(Coeff(8:10));
                 % A death rate larger than 3 is abnormally high. It is not
                 % used for the fitting.                 
                 rate(abs(rate)>3)=nan;
+                
+                % Remove death rate = 0 if the majority number of death is not
+                % zero
+                if numel(find(rate==0))/numel(rate) <0.5
+                    rate(abs(rate)==0)=nan;
+                end
+                
                 [coeff1,r1] = lsqcurvefit(@(para,t) myFun1(para,t),...
                     guess(8:10),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
                 [coeff2,r2] = lsqcurvefit(@(para,t) myFun2(para,t),...
@@ -280,7 +298,7 @@ Kappa1 = abs(Coeff(8:10));
                 [coeff3,r3] = lsqcurvefit(@(para,t) myFun3(para,t),...
                     guess(8:10),x(~isnan(rate)),rate(~isnan(rate)),[0 0 0],[1 1 100],opt);
 %                 
-%                  figure;plot(x,rate,x,myFun1(coeff1,x),'r',x,myFun2(coeff2,x),'g',x,myFun3(coeff3,x),'b')
+%                     figure;plot(x,rate,x,myFun1(coeff1,x),'r',x,myFun2(coeff2,x),'g',x,myFun3(coeff3,x),'b')
                 
                 minR = min([r1,r2,r3]);
                 if r1==minR
