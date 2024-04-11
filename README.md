@@ -3,7 +3,7 @@
 [![View Generalized SEIR Epidemic Model (fitting and computation) on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://se.mathworks.com/matlabcentral/fileexchange/74545-generalized-seir-epidemic-model-fitting-and-computation)
 [![DOI](https://zenodo.org/badge/247972639.svg)](https://zenodo.org/badge/latestdoi/247972639)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-<a href="https://www.buymeacoffee.com/echeynet" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 25px !important;width: 120px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+<a href="https://www.buymeacoffee.com/echeynet"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a baguette&emoji=🥖&slug=echeynet&button_colour=FFDD00&font_colour=000000&font_family=Comic&outline_colour=000000&coffee_colour=ffffff" style="height: 30px" /></a>
 
 ## Description
 A generalized SEIR model with seven states [2] is numerically implemented. The implementation is done from scratch except for the fitting, that relies on the function "lsqcurvfit". Therefore, the present implementation likely differs from the one used in ref.[2].
